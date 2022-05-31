@@ -30,7 +30,7 @@ export class Document {
   // The default page size
   private pageSize: Size
 
-  private constructor(data?: IDocument) {
+  public constructor(data?: IDocument) {
     this.pages = (data?.pages) ? data.pages.map((p) => { return new Page(p) }) : []
     this.fileReferences = (data?.fileReferences) ? data.fileReferences : []
     this.pageSize = (data?.pageSize) ? data.pageSize : { width: PageSizes.A4[0], height: PageSizes.A4[1] }
@@ -82,7 +82,7 @@ export class Document {
 
   public static fromJSONBuffer = (jsonBuffer: Buffer): Document => {
     const doc = JSON.parse(jsonBuffer.toString());
-    return new Document(doc.pages)
+    return new Document(doc)
   }
 
   public generatePDFFile = async (options?: PDFFileGeneratorOption): Promise<Buffer> => {
