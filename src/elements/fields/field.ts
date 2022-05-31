@@ -6,6 +6,7 @@ export interface FieldStyle {
   borderColor?: string;
   borderWidth?: number;
   font?: string;
+  fontSize?: number;
   hidden?: boolean;
 }
 

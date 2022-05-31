@@ -4,8 +4,6 @@ import { Field } from "./field";
 
 export interface Button extends Field {
   text: string
-  font?: string
-  fontSize?: number
   image?: Image
   imageAlignment?: ImageAlignment
 }

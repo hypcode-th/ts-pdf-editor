@@ -1,11 +1,9 @@
 import { Field } from "./field";
 
-export interface Dropdown extends Field { 
+export interface OptionList extends Field { 
   options?: string[]
-  editable?: boolean    
   multiselect?: boolean
   selectOnClick?: boolean
   sorted?: boolean
-  spellChecked?: boolean
   selectedOptions: string[]
 }

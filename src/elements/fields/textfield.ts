@@ -11,7 +11,5 @@ export interface TextField extends Field {
   spellChecking?: boolean
   maxLength?: number
   alignment?: TextAlignment
-  font?: string
-  fontSize?: number
   text?: string
 }

@@ -1,7 +1,4 @@
-import { Color, createPDFAcroFields, degrees, FieldAlreadyExistsError, InvalidFieldNamePartError, PDFAcroField, PDFAcroForm, PDFAcroNonTerminal, PDFForm, PDFRef, rgb } from "pdf-lib";
-import { FieldAppearanceOptions } from "pdf-lib/cjs/api/form/PDFField";
-import { FieldStyle } from "./elements/fields/field";
-import { Element } from "./elements/element"
+import { Color, createPDFAcroFields, FieldAlreadyExistsError, InvalidFieldNamePartError, PDFAcroField, PDFAcroForm, PDFAcroNonTerminal, PDFForm, PDFRef, rgb } from "pdf-lib";
 
 export function Uint8ArrayToBuffer(data: Uint8Array): Buffer {
   return ArrayBuffer.isView(data) ? Buffer.from(data.buffer, data.byteOffset, data.byteLength) : Buffer.from(data)
@@ -100,19 +97,3 @@ export function addFieldToParent(
   parent.addField(fieldRef);
   field.setParent(parentRef);
 };
-
-export function createFieldAppearanceOptions(element: Element, style?: FieldStyle): FieldAppearanceOptions {
-  const { x, y, width, height, rotate } = element
-  return {
-    x,
-    y,
-    width,
-    height,
-    rotate: degrees(rotate),
-    textColor: (style?.textColor) ? colorFromHex(style?.textColor) : undefined,
-    backgroundColor: (style?.backgroundColor) ? colorFromHex(style?.backgroundColor) : undefined,
-    borderColor: (style?.borderColor) ? colorFromHex(style?.borderColor) : undefined,
-    borderWidth: style?.borderWidth,
-    hidden: style?.hidden
-  }
-}
