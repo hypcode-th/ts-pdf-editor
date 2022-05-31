@@ -32,7 +32,7 @@ export class PDFFileGenerator {
   private imageDict: Map<string, PDFImage>
   private options?: PDFFileGeneratorOption
 
-  protected constructor(doc: IDocument, pdfDoc: PDFDocument, options: PDFFileGeneratorOption) {
+  protected constructor(doc: IDocument, pdfDoc: PDFDocument, options?: PDFFileGeneratorOption) {
     this.doc = doc
     this.pdfDoc = pdfDoc
     this.fontDict = new Map<string, PDFFont>()
@@ -40,7 +40,7 @@ export class PDFFileGenerator {
     this.options = options
   }
 
-  public static async create(doc: IDocument, options: PDFFileGeneratorOption): Promise<PDFFileGenerator> {
+  public static async create(doc: IDocument, options?: PDFFileGeneratorOption): Promise<PDFFileGenerator> {
     // Create an empty PDF document
     let pdfDoc = await PDFDocument.create()
 

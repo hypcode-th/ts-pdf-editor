@@ -85,7 +85,7 @@ export class Document {
     return new Document(doc.pages)
   }
 
-  public generatePDFFile = async (options: PDFFileGeneratorOption): Promise<Buffer> => {
+  public generatePDFFile = async (options?: PDFFileGeneratorOption): Promise<Buffer> => {
     const generator = await PDFFileGenerator.create(this.serialize(), options)
     return await generator.generate()
   }
