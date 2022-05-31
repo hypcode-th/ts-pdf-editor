@@ -1,5 +1,6 @@
 import { PDFPage } from "pdf-lib"
 import { Size } from "./document"
+import { Element } from "./elements/element"
 
 export interface IPage {
   refFileID?: string
