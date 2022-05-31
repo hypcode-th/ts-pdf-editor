@@ -12,4 +12,4 @@ export * from './elements/fields/textfield';
 export * from './elements/image';
 export * from './elements/text';
 export * from './context';
-export { PageSizes, StandardFonts } from 'pdf-lib'
+export * from 'pdf-lib'
