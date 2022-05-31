@@ -1,7 +1,7 @@
 import { degrees, PageSizes, PDFAcroPushButton, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, StandardFonts } from "pdf-lib";
 import * as fontkit from '@pdf-lib/fontkit';
 import * as fs from 'fs';
-import { IDocument, Document } from "./document";
+import { IDocument } from "./document";
 import { Element, ElementType } from "./elements/element";
 import { Field, FieldStyle } from "./elements/fields/field";
 import { CheckBox } from "./elements/fields/checkbox";
