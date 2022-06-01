@@ -70,14 +70,14 @@ export class PDFFileGenerator {
     for (let page of this.doc.pages) {
       let pdfPage: PDFPage | undefined
       // If the page is a reference to the PDF file
-      if (page.refFileID) {
+      if (page.refFileId) {
         if (page.refPageIndex === undefined) {
           throw new Error("reference page index is missing")
         }
         if (page.refPageIndex < 0) {
           throw new Error("reference page index must be greater or equal to zero")
         }
-        let refDoc = fileRefDict.get(page.refFileID)
+        let refDoc = fileRefDict.get(page.refFileId)
         if (!refDoc) {
           throw new Error(`a file reference by the page ${pageIndex} is not found`)
         }

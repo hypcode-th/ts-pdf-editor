@@ -3,28 +3,28 @@ import { Size } from "./document"
 import { Element } from "./elements/element"
 
 export interface IPage {
-  refFileID?: string
+  refFileId?: string
   refPageIndex?: number
   elements?: Element[]
-  pageSize?: Size
+  pageSize: Size
 }
 
 export class Page {
-  private refFileID?: string
+  private refFileId?: string
   private refPageIndex?: number
   private elements: Element[]
-  public pageSize?: Size
+  public pageSize: Size
 
-  constructor(data?: IPage) {
-    this.refFileID = data?.refFileID
+  constructor(data: IPage) {
+    this.refFileId = data?.refFileId
     this.refPageIndex = data?.refPageIndex
     this.elements = data?.elements ? data?.elements : []
     this.pageSize = data?.pageSize
   }
 
-  public static createFromPDFPage(pdfPage: PDFPage, refFileID?: string, refPageIndex?: number): Page {
+  public static createFromPDFPage(pdfPage: PDFPage, refFileId?: string, refPageIndex?: number): Page {
     return new Page({
-      refFileID,
+      refFileId,
       refPageIndex,
       pageSize: pdfPage.getSize()
     })
@@ -32,7 +32,7 @@ export class Page {
 
   public serialize(): IPage {
     return {
-      refFileID: this.refFileID,
+      refFileId: this.refFileId,
       refPageIndex: this.refPageIndex, 
       elements: this.elements,
       pageSize: this.pageSize
@@ -57,5 +57,13 @@ export class Page {
       return deletedElements[0]
     }
     return undefined
+  }
+
+  public getRefFileId(): string | undefined {
+    return this.refFileId
+  }
+
+  public getRefPageIndex(): number | undefined {
+    return this.refPageIndex
   }
 }
