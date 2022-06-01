@@ -20,7 +20,7 @@ export interface IDocument {
   fileReferences: PDFFileReference[]
 
   // The default page size
-  pageSize?: Size
+  defaultPageSize?: Size
 }
 
 export class Document {
@@ -28,19 +28,19 @@ export class Document {
   private fileReferences: PDFFileReference[]
 
   // The default page size
-  private pageSize: Size
+  public defaultPageSize: Size
 
   public constructor(data?: IDocument) {
     this.pages = (data?.pages) ? data.pages.map((p) => { return new Page(p) }) : []
     this.fileReferences = (data?.fileReferences) ? data.fileReferences : []
-    this.pageSize = (data?.pageSize) ? data.pageSize : { width: PageSizes.A4[0], height: PageSizes.A4[1] }
+    this.defaultPageSize = (data?.defaultPageSize) ? data.defaultPageSize : { width: PageSizes.A4[0], height: PageSizes.A4[1] }
   }
 
   public static createNewDocument = (pageSize?: Size): Document => {
     return new Document({
       pages: [],
       fileReferences: [],
-      pageSize
+      defaultPageSize: pageSize
     })
   }
 
@@ -88,5 +88,33 @@ export class Document {
   public generatePDFFile = async (options?: PDFFileGeneratorOption): Promise<Buffer> => {
     const generator = await PDFFileGenerator.create(this.serialize(), options)
     return await generator.generate()
+  }
+
+  public getPages(): Page[] {
+    return this.pages
+  }
+
+  public getPage(idx: number): Page {
+    return this.pages[idx]
+  }
+
+  public getPageCount(): number {
+    return this.pages.length
+  }
+
+  public addPage(pageSize?: Size): Page {
+    let page = new Page({
+      pageSize: pageSize ? pageSize : this.defaultPageSize,
+    })
+    this.pages.push(page)
+    return page
+  }
+
+  public deletePage(idx: number): Page | undefined {
+    const deletedPages = this.pages.splice(idx, 1)
+    if (deletedPages.length > 0) {
+      return deletedPages[0]
+    }
+    return undefined
   }
 }

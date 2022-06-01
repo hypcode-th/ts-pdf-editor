@@ -86,8 +86,8 @@ export class PDFFileGenerator {
       } else if (page.pageSize) {
         const { width, height } = page.pageSize
         pdfPage = this.pdfDoc.addPage([width, height])
-      } else if (this.doc.pageSize) {
-        const { width, height } = this.doc.pageSize
+      } else if (this.doc.defaultPageSize) {
+        const { width, height } = this.doc.defaultPageSize
         pdfPage = this.pdfDoc.addPage([width, height])
       } else {
         pdfPage = this.pdfDoc.addPage(PageSizes.A4)
