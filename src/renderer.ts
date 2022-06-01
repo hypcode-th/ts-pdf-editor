@@ -30,6 +30,11 @@ export class PDFRenderingContext {
     return this.pdfInstance
   }
 
+  public destroy() {
+    this.pdfInstance.destroy()
+    this.pdfInstance = undefined
+  }
+
   public async renderPage(idx: number, canvas: HTMLCanvasElement, scale?: number) {
     if (!canvas) return
     this.pdfInstance?.getPage(idx).then(async (page: any) => {

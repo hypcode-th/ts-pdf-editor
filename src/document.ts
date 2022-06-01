@@ -39,6 +39,13 @@ export class Document {
     this.defaultPageSize = (data?.defaultPageSize) ? data.defaultPageSize : { width: PageSizes.A4[0], height: PageSizes.A4[1] }
   }
 
+  public destroy() {
+    for(let value of this.renderContextDict.values()) {
+      value.destroy()
+    }
+    this.renderContextDict.clear()
+  }
+
   public static createNewDocument = (pageSize?: Size): Document => {
     return new Document({
       pages: [],
