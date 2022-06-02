@@ -81,8 +81,15 @@ export class PDFFileGenerator {
         if (!refDoc) {
           throw new Error(`a file reference by the page ${pageIndex} is not found`)
         }
-        let copiedPages = await this.pdfDoc.copyPages(refDoc, [page.refPageIndex])
-        pdfPage = this.pdfDoc.addPage(copiedPages[0])
+        try {
+          let copiedPages = await this.pdfDoc.copyPages(refDoc, [page.refPageIndex])
+          console.log(copiedPages)
+          pdfPage = this.pdfDoc.addPage(copiedPages[0])
+        } catch (err) {
+          console.log(err)
+          throw err
+        }
+        
       } else if (page.pageSize) {
         const { width, height } = page.pageSize
         pdfPage = this.pdfDoc.addPage([width, height])

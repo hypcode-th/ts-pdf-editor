@@ -96,7 +96,9 @@ export class Document {
   }
 
   public generatePDFFile = async (options?: PDFFileGeneratorOption): Promise<Buffer> => {
-    const generator = await PDFFileGenerator.create(this.serialize(), options)
+    const iDoc = this.serialize()
+    console.log(iDoc)
+    const generator = await PDFFileGenerator.create(iDoc, options)
     return await generator.generate()
   }
 
