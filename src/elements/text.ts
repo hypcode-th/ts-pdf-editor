@@ -1,7 +1,7 @@
 import { BlendMode, PDFPageDrawTextOptions } from "pdf-lib";
 import { Field } from "./fields/field";
 
-export interface Text extends Field {
+export interface Text extends Element {
 //   options: PDFPageDrawTextOptions
   value: string;
   color?: string;
