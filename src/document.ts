@@ -1,7 +1,7 @@
 import { PageSizes, PDFDocument, PDFPage } from "pdf-lib"
 import { Md5 } from "ts-md5"
 import { IPage, Page } from "./page"
-import { PDFFileGenerator, PDFFileGeneratorOption } from "./context";
+import { PDFFileGenerator, PDFFileGeneratorOption } from "./generator";
 import { PDFRenderingContext } from "./renderer";
 
 export interface Size {
