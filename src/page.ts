@@ -1,4 +1,4 @@
-import { PDFPage } from "pdf-lib"
+import { Document } from "./document"
 import { Size } from "./document"
 import { Element } from "./elements/element"
 
@@ -20,14 +20,6 @@ export class Page {
     this.refPageIndex = data?.refPageIndex
     this.elements = data?.elements ? data?.elements : []
     this.pageSize = data?.pageSize
-  }
-
-  public static createFromPDFPage(pdfPage: PDFPage, refFileId?: string, refPageIndex?: number): Page {
-    return new Page({
-      refFileId,
-      refPageIndex,
-      pageSize: pdfPage.getSize()
-    })
   }
 
   public serialize(): IPage {

@@ -12,7 +12,7 @@ export interface Size {
 }
 
 export interface PDFFileReference {
-  refID: string
+  refId: string
   src: string | Uint8Array | ArrayBuffer
 }
 
@@ -54,12 +54,12 @@ export class Document {
     })
   }
 
-  public static createFromPDFBinary = async (src: string | Uint8Array, refID?: string): Promise<Document> => {
+  public static createFromPDFBinary = async (src: string | Uint8Array, refId?: string): Promise<Document> => {
     let pages: IPage[] = []
-    let refFileID: string
+    let refFileId: string
     const pdfDoc = await PDFDocument.load(src)
-    if (refID) {
-      refFileID = refID
+    if (refId) {
+      refFileId = refId
     } else {
       let md5 = new Md5()
       if (typeof src === 'string') {
@@ -67,15 +67,21 @@ export class Document {
       } else {
         md5.appendByteArray(src)
       }
-      refFileID = md5.end(false) as string
+      refFileId = md5.end(false) as string
     }
     
     pages = pdfDoc.getPages().map((pdfPage: PDFPage, idx: number) => {
-      return Page.createFromPDFPage(pdfPage, refFileID, idx).serialize()
+      const size = pdfPage.getSize()
+      return {
+        refFileId: refFileId,
+        refPageIndex: idx, 
+        elements: [],
+        pageSize: size
+      }
     })
     return new Document({
       pages,
-      fileReferences: [{ refID: refFileID, src }]
+      fileReferences: [{ refId: refFileId, src }]
     })
   }
 
@@ -149,18 +155,18 @@ export class Document {
     return this.fileReferences
   }
 
-  protected getRenderingContext(refFileID: string): PDFRenderingContext | undefined {
-    let ctx = this.renderContextDict.get(refFileID)
+  protected getRenderingContext(refFileId: string): PDFRenderingContext | undefined {
+    let ctx = this.renderContextDict.get(refFileId)
     if (ctx) {
       return ctx
     }
     const refFile = this.fileReferences.find((value, idx) => {
-      return value.refID === refFileID
+      return value.refId === refFileId
     })
     if (!refFile) return undefined 
 
     ctx = new PDFRenderingContext(refFile.src)
-    this.renderContextDict.set(refFileID, ctx)
+    this.renderContextDict.set(refFileId, ctx)
     return ctx
   }
 

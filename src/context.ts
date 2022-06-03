@@ -62,7 +62,7 @@ export class PDFFileGenerator {
         src = fs.readFileSync(src)
       }
       const exfDoc = await PDFDocument.load(src)
-      fileRefDict.set(exf.refID, exfDoc)
+      fileRefDict.set(exf.refId, exfDoc)
     }
 
     // Process each page
