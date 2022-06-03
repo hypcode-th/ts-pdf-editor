@@ -1,4 +1,3 @@
-import { Document } from './document';
 import * as fs from 'fs';
 
 const pdfJS = require('pdfjs-dist/legacy/build/pdf')

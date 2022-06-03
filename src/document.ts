@@ -1,8 +1,6 @@
 import { PageSizes, PDFDocument, PDFPage } from "pdf-lib"
 import { Md5 } from "ts-md5"
 import { IPage, Page } from "./page"
-import * as fontkit from '@pdf-lib/fontkit';
-import * as fs from 'fs';
 import { PDFFileGenerator, PDFFileGeneratorOption } from "./context";
 import { PDFRenderingContext } from "./renderer";
 

@@ -1,4 +1,3 @@
-import { Document } from "./document"
 import { Size } from "./document"
 import { Element } from "./elements/element"
 
