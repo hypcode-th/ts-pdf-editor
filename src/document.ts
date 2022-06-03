@@ -130,6 +130,13 @@ export class Document {
     return undefined
   }
 
+  public reorderPage(oldIndex:number, newIdx: number) {
+    const pages = this.pages.splice(oldIndex, 1)
+    if (pages.length > 0) {
+      this.pages.splice(newIdx, 0, pages[0])
+    }
+  }
+
   public getFileReferences(): PDFFileReference[] {
     return this.fileReferences
   }
