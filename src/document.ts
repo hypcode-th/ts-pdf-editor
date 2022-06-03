@@ -122,6 +122,14 @@ export class Document {
     return page
   }
 
+  public insertPage(idx: number, pageSize?: Size): Page {
+    let page = new Page({
+      pageSize: pageSize ? pageSize : this.defaultPageSize,
+    })
+    this.pages.splice(idx, 0, page)
+    return page
+  }
+
   public deletePage(idx: number): Page | undefined {
     const deletedPages = this.pages.splice(idx, 1)
     if (deletedPages.length > 0) {
