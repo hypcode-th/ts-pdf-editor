@@ -1,5 +1,4 @@
-import { BlendMode, PDFDocument, PDFImage, PDFPage, PDFPageDrawImageOptions } from 'pdf-lib'
-import { UnsupportMimeType } from '../errors'
+import { BlendMode } from 'pdf-lib'
 import { Element } from './element'
 
 export interface Image extends Element {

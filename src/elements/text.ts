@@ -1,5 +1,5 @@
-import { BlendMode, PDFPageDrawTextOptions } from "pdf-lib";
-import { Field } from "./fields/field";
+import { BlendMode } from "pdf-lib";
+import { Element } from './element'
 
 export interface Text extends Element {
 //   options: PDFPageDrawTextOptions
