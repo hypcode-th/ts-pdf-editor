@@ -118,20 +118,20 @@ export class Document {
     return this.pages.length
   }
 
-  public addPage(pageSize?: Size): Page {
-    let page = new Page({
-      pageSize: pageSize ? pageSize : this.defaultPageSize,
+  public addPage(page?: Page): Page {
+    let p = (page) ? page : new Page({
+      pageSize: this.defaultPageSize,
     })
-    this.pages.push(page)
-    return page
+    this.pages.push(p)
+    return p
   }
 
-  public insertPage(idx: number, pageSize?: Size): Page {
-    let page = new Page({
-      pageSize: pageSize ? pageSize : this.defaultPageSize,
+  public insertPage(idx: number, page?: Page): Page {
+    let p = (page) ? page : new Page({
+      pageSize: this.defaultPageSize,
     })
-    this.pages.splice(idx, 0, page)
-    return page
+    this.pages.splice(idx, 0, p)  
+    return p
   }
 
   public deletePage(idx: number): Page | undefined {
