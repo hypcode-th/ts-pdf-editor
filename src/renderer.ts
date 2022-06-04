@@ -1,7 +1,10 @@
-const pdfJS = require('pdfjs-dist/legacy/build/pdf')
-const pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.entry')
 
-pdfJS.GlobalWorkerOptions.workerSrc = pdfjsWorker
+export function getPDFJS(): any {
+  const pdfJS = require('pdfjs-dist/legacy/build/pdf')
+  const pdfjsWorker = require('pdfjs-dist/legacy//build/pdf.worker.entry')
+  pdfJS.GlobalWorkerOptions.workerSrc = pdfjsWorker
+  return pdfJS
+}
 
 export class PDFRenderingContext {
 
@@ -9,7 +12,7 @@ export class PDFRenderingContext {
 
   constructor(src: string | Uint8Array | ArrayBuffer) {
     let data = src
-    const task = pdfJS.getDocument({ data })
+    const task = getPDFJS().getDocument({ data })
     task.promise.then(
       (pdf: any) => {
         this.pdfInstance = pdf
