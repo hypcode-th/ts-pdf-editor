@@ -1,15 +1,17 @@
-const pdfJS = require('pdfjs-dist/legacy/build/pdf')
-// const pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.entry')
-const pdfjsWorker = require('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.entry.min.js')
-pdfJS.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 export class PDFRenderingContext {
 
   private pdfInstance: any
 
+  private static pdfJS = require('pdfjs-dist/legacy/build/pdf')
+  private static pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.entry')
+  static {
+    PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = PDFRenderingContext.pdfjsWorker
+  }
+
   constructor(src: string | Uint8Array | ArrayBuffer) {
     let data = src
-    const task = pdfJS.getDocument({ data })
+    const task = PDFRenderingContext.pdfJS.getDocument({ data })
     task.promise.then(
       (pdf: any) => {
         this.pdfInstance = pdf
