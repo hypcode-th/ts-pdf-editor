@@ -172,7 +172,7 @@ export class Document {
     const page = this.getPage(pageIndex)
     const refFileId = page.getRefFileId() 
     const refPageIndex = page.getRefPageIndex()
-    if (refFileId && (refPageIndex !== undefined && refPageIndex > 0)) {
+    if (refFileId && (refPageIndex !== undefined && refPageIndex >= 0)) {
       const ctx = this.getRenderingContext(refFileId)
       if (ctx) {
         await ctx.renderPage(refPageIndex, canvas, scale)
