@@ -4,7 +4,7 @@ export class PDFRenderingContext {
   private pdfInstance: any
 
   private static pdfJS = require('pdfjs-dist/legacy/build/pdf')
-  private static pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.entry')
+  private static pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.min')
   static {
     console.log(PDFRenderingContext.pdfjsWorker)
     PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = PDFRenderingContext.pdfjsWorker
