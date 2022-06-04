@@ -1,6 +1,5 @@
 import { degrees, PageSizes, PDFAcroPushButton, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, StandardFonts } from "pdf-lib";
 import * as fontkit from '@pdf-lib/fontkit';
-import * as fs from 'fs';
 import { IDocument } from "./document";
 import { Element, ElementType } from "./elements/element";
 import { Field, FieldStyle } from "./elements/fields/field";
@@ -57,11 +56,7 @@ export class PDFFileGenerator {
     const fileRefDict = new Map<string, PDFDocument>()
     for (let exf of this.doc.fileReferences) {
       if (!exf.src) continue
-      let src = exf.src
-      if ((typeof src === 'string') && (src.startsWith("https://") || src.startsWith("http://"))) {
-        src = fs.readFileSync(src)
-      }
-      const exfDoc = await PDFDocument.load(src)
+      const exfDoc = await PDFDocument.load(exf.src)
       fileRefDict.set(exf.refId, exfDoc)
     }
 

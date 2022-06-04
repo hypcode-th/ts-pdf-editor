@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-
 const pdfJS = require('pdfjs-dist/legacy/build/pdf')
 const pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.entry')
 
@@ -11,9 +9,6 @@ export class PDFRenderingContext {
 
   constructor(src: string | Uint8Array | ArrayBuffer) {
     let data = src
-    if ((typeof data === 'string') && (data.startsWith("https://") || data.startsWith("http://"))) {
-      data = fs.readFileSync(data)
-    }
     const task = pdfJS.getDocument({ data })
     task.promise.then(
       (pdf: any) => {
