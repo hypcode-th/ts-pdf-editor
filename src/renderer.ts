@@ -36,7 +36,8 @@ export class PDFRenderingContext {
 
   public async renderPage(idx: number, canvas: HTMLCanvasElement, scale?: number) {
     if (!canvas) return
-    this.pdfInstance?.getPage(idx).then(async (page: any) => {
+    // the PDS.js use 1-based page index. Therefore, we getPage with idx + 1
+    this.pdfInstance?.getPage(idx + 1).then(async (page: any) => {
       var viewport = page.getViewport({ scale })
       const context = canvas.getContext('2d')
       canvas.height = Math.floor(viewport.height)
