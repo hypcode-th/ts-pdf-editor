@@ -181,18 +181,18 @@ export class Document {
     } 
 
     // Render empty page
-    // const { width, height } = page.pageSize
-    // const iHeight = Math.floor(height * (scale || 1))
-    // const iWidth = Math.floor(width * (scale || 1))
-    // canvas.height = iHeight
-    // canvas.width = iWidth
-    // canvas.style.height = iHeight + 'px'
-    // canvas.style.width = iWidth + 'px'
-    // canvas.style.background = '#FFFFFF'
-    // const context = canvas.getContext('2d')
-    // if (context) {
-    //   context.fillStyle = "#FFFFFF";
-    //   context.fillRect(0, 0, iWidth, iHeight);  
-    // }
+    const { width, height } = page.pageSize
+    const iHeight = Math.floor(height * (scale || 1))
+    const iWidth = Math.floor(width * (scale || 1))
+    canvas.height = iHeight
+    canvas.width = iWidth
+    canvas.style.height = iHeight + 'px'
+    canvas.style.width = iWidth + 'px'
+    canvas.style.background = '#FFFFFF'
+    const context = canvas.getContext('2d')
+    if (context) {
+      context.fillStyle = "#FFFFFF";
+      context.fillRect(0, 0, iWidth, iHeight);  
+    }
   }
 }
