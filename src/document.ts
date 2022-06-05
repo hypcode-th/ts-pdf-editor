@@ -168,7 +168,7 @@ export class Document {
     return ctx
   }
 
-  public async renderPage(pageIndex: number, canvas: HTMLCanvasElement, scale?: number) {
+  public async renderPage(pageIndex: number, canvas: HTMLCanvasElement, scale?: number): Promise<void> {
     const page = this.getPage(pageIndex)
     const refFileId = page.getRefFileId() 
     const refPageIndex = page.getRefPageIndex()

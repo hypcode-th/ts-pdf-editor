@@ -42,19 +42,23 @@ export class PDFRenderingContext {
       canvas.width = Math.floor(viewport.width)
       canvas.style.height = Math.floor(viewport.height) + 'px'
       canvas.style.width = Math.floor(viewport.width) + 'px'
-      let promise = new Promise((resolve, reject) => {
-        const task = page.render({
-          canvasContext: context,
-          viewport: viewport,
-        }).promise
-          .then(() => {
-            resolve(null)
-          })
-          .catch((err: any) => {
-            reject(err)
-          })
-      });
-      await promise
+      const task = page.render({
+        canvasContext: context,
+        viewport: viewport,
+      })
+      // let promise = new Promise((resolve, reject) => {
+      //   const task = page.render({
+      //     canvasContext: context,
+      //     viewport: viewport,
+      //   }).promise
+      //     .then(() => {
+      //       resolve(null)
+      //     })
+      //     .catch((err: any) => {
+      //       reject(err)
+      //     })
+      // });
+      // await promise
     })
   }
 }
