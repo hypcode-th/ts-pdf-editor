@@ -47,7 +47,7 @@ export class PDFFileGenerator {
     if (options?.customFontMap) {
       pdfDoc.registerFontkit(fontkit)
     }
-    
+
     return new PDFFileGenerator(doc, pdfDoc, options)
   }
 
@@ -103,30 +103,30 @@ export class PDFFileGenerator {
     const data = await this.pdfDoc.save()
     return Uint8ArrayToBuffer(data)
   }
-  
+
   protected async createPDFElement(page: PDFPage, elem: any): Promise<void> {
-    switch(elem.elemType) {
-    case ElementType.TextField:
-      return await this.addTextField(page, elem)
-    case ElementType.CheckBox:
-      return await this.addCheckBox(page, elem)
-    case ElementType.Signature:
-      return await this.addSignature(page, elem)
-    case ElementType.RadioGroup:
-      return await this.addRadioGroup(page, elem)
-    case ElementType.Dropdown:
-      return await this.addDropdown(page, elem)
-    case ElementType.OptionList:
-      return await this.addOptionList(page, elem)
-    case ElementType.Button:
-      return await this.addButton(page, elem)
-    case ElementType.Image:
-      return await this.drawImage(page, elem)
-    case ElementType.Text:
-      return await this.drawText(page, elem)
+    switch (elem.elemType) {
+      case ElementType.TextField:
+        return await this.addTextField(page, elem)
+      case ElementType.CheckBox:
+        return await this.addCheckBox(page, elem)
+      case ElementType.Signature:
+        return await this.addSignature(page, elem)
+      case ElementType.RadioGroup:
+        return await this.addRadioGroup(page, elem)
+      case ElementType.Dropdown:
+        return await this.addDropdown(page, elem)
+      case ElementType.OptionList:
+        return await this.addOptionList(page, elem)
+      case ElementType.Button:
+        return await this.addButton(page, elem)
+      case ElementType.Image:
+        return await this.drawImage(page, elem)
+      case ElementType.Text:
+        return await this.drawText(page, elem)
     }
   }
-  
+
   protected async getFont(fontName: string): Promise<PDFFont> {
     let font = this.fontDict.get(fontName)
     if (font) return font
@@ -154,13 +154,13 @@ export class PDFFileGenerator {
     }
 
     switch (img.mimeType) {
-    case 'image/jpg':
-    case 'image/jpeg':
-      return await this.pdfDoc.embedJpg(img.src)
-    case 'image/png':
-      return await this.pdfDoc.embedPng(img.src)
-    default:
-      throw new UnsupportMimeType(img.mimeType)
+      case 'image/jpg':
+      case 'image/jpeg':
+        return await this.pdfDoc.embedJpg(img.src)
+      case 'image/png':
+        return await this.pdfDoc.embedPng(img.src)
+      default:
+        throw new UnsupportMimeType(img.mimeType)
     }
   }
 
@@ -207,6 +207,11 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createButton(button.name)
     this.updatePDFField(field, button)
+    const pdfFont = await this.getFont(StandardFonts.Helvetica)
+    if (pdfFont) {
+      field.defaultUpdateAppearances(pdfFont)
+    }
+    
     if (button.fontSize) {
       field.setFontSize(button.fontSize)
     }
@@ -219,7 +224,7 @@ export class PDFFileGenerator {
     const options = await this.createFieldAppearanceOptions(button)
     field.addToPage(button.text, page, options)
   }
-  
+
   protected async addCheckBox(page: PDFPage, checkBox: CheckBox): Promise<void> {
     const form = page.doc.getForm()
     const field = form.createCheckBox(checkBox.name)
@@ -237,6 +242,11 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createDropdown(dropdown.name)
     this.updatePDFField(field, dropdown)
+    const pdfFont = await this.getFont(StandardFonts.Helvetica)
+    if (pdfFont) {
+      field.defaultUpdateAppearances(pdfFont)
+    }
+
     if (dropdown.options) {
       field.setOptions(dropdown.options)
     }
@@ -251,9 +261,9 @@ export class PDFFileGenerator {
       field.disableMultiselect()
     }
     if (dropdown.selectOnClick === true) {
-      field.enableSelectOnClick() 
+      field.enableSelectOnClick()
     } else if (dropdown.selectOnClick === false) {
-      field.disableSelectOnClick() 
+      field.disableSelectOnClick()
     }
     if (dropdown.sorted === true) {
       field.enableSorting()
@@ -279,6 +289,11 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createOptionList(optionList.name)
     this.updatePDFField(field, optionList)
+    const pdfFont = await this.getFont(StandardFonts.Helvetica)
+    if (pdfFont) {
+      field.defaultUpdateAppearances(pdfFont)
+    }
+
     if (optionList.options) {
       field.setOptions(optionList.options)
     }
@@ -288,9 +303,9 @@ export class PDFFileGenerator {
       field.disableMultiselect()
     }
     if (optionList.selectOnClick === true) {
-      field.enableSelectOnClick() 
+      field.enableSelectOnClick()
     } else if (optionList.selectOnClick === false) {
-      field.disableSelectOnClick() 
+      field.disableSelectOnClick()
     }
     if (optionList.sorted === true) {
       field.enableSorting()
@@ -326,7 +341,11 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createTextField(textField.name)
     this.updatePDFField(field, textField)
-    
+    const pdfFont = await this.getFont(StandardFonts.Helvetica)
+    if (pdfFont) {
+      field.defaultUpdateAppearances(pdfFont)
+    }
+
     if (textField.combing === true) {
       field.enableCombing()
     } else if (textField.combing === false) {
@@ -422,7 +441,7 @@ export class PDFFileGenerator {
       y,
       maxWidth,
       lineHeight,
-      size, 
+      size,
       color: color ? colorFromHex(color) : undefined,
       rotate: rotate ? degrees(rotate) : undefined,
       xSkew: xSkew ? degrees(xSkew) : undefined,
