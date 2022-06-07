@@ -1,6 +1,13 @@
 import { Element } from '../element'
 
-export interface FieldStyle {
+
+export interface Field extends Element {
+  name: string
+  exported?: boolean 
+  readOnly?: boolean 
+  required?: boolean
+  
+  // styles
   textColor?: string;
   backgroundColor?: string;
   borderColor?: string;
@@ -8,13 +15,5 @@ export interface FieldStyle {
   font?: string;
   fontSize?: number;
   hidden?: boolean;
-}
-
-export interface Field extends Element {
-  name: string
-  exported?: boolean 
-  readOnly?: boolean 
-  required?: boolean
-  style?: FieldStyle
 }
 

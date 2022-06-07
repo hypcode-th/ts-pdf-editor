@@ -1,5 +1,7 @@
 import { Size } from "./document"
 import { Element } from "./elements/element"
+import { Document } from "./document"
+import { PDFRenderingContext } from "./renderer"
 
 export interface IPage {
   refFileId?: string

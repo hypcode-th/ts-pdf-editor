@@ -2,7 +2,7 @@ import { degrees, PageSizes, PDFAcroPushButton, PDFButton, PDFDocument, PDFField
 import * as fontkit from '@pdf-lib/fontkit';
 import { IDocument } from "./document";
 import { Element, ElementType } from "./elements/element";
-import { Field, FieldStyle } from "./elements/fields/field";
+import { Field } from "./elements/fields/field";
 import { CheckBox } from "./elements/fields/checkbox";
 import { addFieldToParent, colorFromHex, findOrCreateNonTerminals, splitFieldName, Uint8ArrayToBuffer } from "./helper";
 import { Button } from "./elements/fields/button";
@@ -182,11 +182,11 @@ export class PDFFileGenerator {
     }
   }
 
-  protected async createFieldAppearanceOptions(element: Element, style?: FieldStyle): Promise<FieldAppearanceOptions> {
+  protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
     const { x, y, width, height, rotate } = element
-    let font: PDFFont | undefined = undefined
-    if (style?.font) {
-      font = await this.getFont(style.font)
+    let pdfFont: PDFFont | undefined = undefined
+    if (element.font) {
+      pdfFont = await this.getFont(element.font)
     }
     return {
       x,
@@ -194,12 +194,12 @@ export class PDFFileGenerator {
       width,
       height,
       rotate: degrees(rotate),
-      textColor: (style?.textColor) ? colorFromHex(style?.textColor) : undefined,
-      backgroundColor: (style?.backgroundColor) ? colorFromHex(style?.backgroundColor) : undefined,
-      borderColor: (style?.borderColor) ? colorFromHex(style?.borderColor) : undefined,
-      borderWidth: style?.borderWidth,
-      hidden: style?.hidden,
-      font,
+      textColor: (element.textColor) ? colorFromHex(element.textColor) : undefined,
+      backgroundColor: (element.backgroundColor) ? colorFromHex(element.backgroundColor) : undefined,
+      borderColor: (element.borderColor) ? colorFromHex(element.borderColor) : undefined,
+      borderWidth: element.borderWidth,
+      hidden: element.hidden,
+      font: pdfFont,
     }
   }
 
@@ -207,8 +207,8 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createButton(button.name)
     this.updatePDFField(field, button)
-    if (button.style?.fontSize) {
-      field.setFontSize(button.style.fontSize)
+    if (button.fontSize) {
+      field.setFontSize(button.fontSize)
     }
     if (button.image) {
       const pdfImg = await this.getImage(button.image)
@@ -216,7 +216,7 @@ export class PDFFileGenerator {
         field.setImage(pdfImg, button.imageAlignment)
       }
     }
-    const options = await this.createFieldAppearanceOptions(button, button.style)
+    const options = await this.createFieldAppearanceOptions(button)
     field.addToPage(button.text, page, options)
   }
   
@@ -268,8 +268,8 @@ export class PDFFileGenerator {
     if (dropdown.selectedOptions) {
       field.select(dropdown.selectedOptions, false)
     }
-    if (dropdown.style?.fontSize) {
-      field.setFontSize(dropdown.style.fontSize)
+    if (dropdown.fontSize) {
+      field.setFontSize(dropdown.fontSize)
     }
     const options = await this.createFieldAppearanceOptions(dropdown)
     field.addToPage(page, options)
@@ -300,8 +300,8 @@ export class PDFFileGenerator {
     if (optionList.selectedOptions) {
       field.select(optionList.selectedOptions, false)
     }
-    if (optionList.style?.fontSize) {
-      field.setFontSize(optionList.style.fontSize)
+    if (optionList.fontSize) {
+      field.setFontSize(optionList.fontSize)
     }
     const options = await this.createFieldAppearanceOptions(optionList)
     field.addToPage(page, options)
@@ -313,7 +313,7 @@ export class PDFFileGenerator {
     this.updatePDFField(field, radioGroup)
     if (radioGroup.options) {
       for (const radioOption of radioGroup.options) {
-        const options = await this.createFieldAppearanceOptions(radioOption, radioOption.style)
+        const options = await this.createFieldAppearanceOptions(radioOption)
         field.addOptionToPage(radioOption.option, page, options)
       }
     }
@@ -368,8 +368,8 @@ export class PDFFileGenerator {
     if (textField.alignment) {
       field.setAlignment(textField.alignment)
     }
-    if (textField.style?.fontSize) {
-      field.setFontSize(textField.style.fontSize)
+    if (textField.fontSize) {
+      field.setFontSize(textField.fontSize)
     }
     if (textField.text) {
       field.setText(textField.text)
