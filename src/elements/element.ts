@@ -1,3 +1,5 @@
+import { BlendMode } from "pdf-lib"
+
 export enum ElementType {
   Text = "text",
   Image = "image",
@@ -39,4 +41,11 @@ export interface StyledElement extends Element {
   font?: string;
   fontSize?: number;
   hidden?: boolean;
+}
+
+export interface DrawableElement extends Element {
+  blendMode?: BlendMode
+  opacity?: number
+  xSkew?: number; // in degree
+  ySkew?: number; // in degree
 }

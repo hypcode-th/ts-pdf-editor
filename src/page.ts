@@ -40,8 +40,12 @@ export class Page {
     return this.elements[idx]
   }
 
-  public addElement(elem: Element) {
-    this.elements.push(elem)
+  public findElementIndex(elem: Element): number {
+    return this.elements.findIndex((e) => { return Object.is(elem, e) })
+  }
+
+  public addElement(elem: Element): number {
+    return this.elements.push(elem)
   }
 
   public deleteElement(idx: number): Element | undefined {
