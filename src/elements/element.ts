@@ -29,3 +29,14 @@ export interface Element {
   // rotate in degree ccw around x,y
   rotate: number
 }
+
+export interface StyledElement extends Element {
+  // styles
+  textColor?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  font?: string;
+  fontSize?: number;
+  hidden?: boolean;
+}

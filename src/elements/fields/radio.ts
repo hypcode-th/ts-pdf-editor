@@ -1,9 +1,8 @@
-import { Field, FieldStyle } from "./field"
-import { Element } from "../element"
+import { Field } from "./field"
+import { StyledElement } from "../element"
 
-export interface RadioOption extends Element {
+export interface RadioOption extends StyledElement {
   option: string 
-  style?: FieldStyle
 };
 
 export interface RadioGroup extends Field {
