@@ -136,7 +136,8 @@ export class Document {
     let p = (page) ? page : new Page({
       pageSize: this.defaultPageSize,
       font: this.defaultFont,
-      fontSize: this.defaultFontSize
+      fontSize: this.defaultFontSize,
+      textColor: '#000000'
     })
     this.pages.splice(idx, 0, p)  
     return p

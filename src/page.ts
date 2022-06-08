@@ -28,7 +28,7 @@ export class Page {
     this.pageSize = data?.pageSize
     this.font = (data?.font) ? data.font : StandardFonts.Helvetica
     this.fontSize = (data?.fontSize) ? data.fontSize : 16
-    this.textColor = (data.textColor) ? data.textColor : '#000000FF'
+    this.textColor = (data.textColor) ? data.textColor : '#000000'
   }
 
   public serialize(): IPage {
