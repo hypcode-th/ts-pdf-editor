@@ -1,4 +1,4 @@
-import { degrees, PageSizes, PDFAcroPushButton, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, rgb, StandardFonts } from "pdf-lib";
+import { degrees, PageSizes, PDFAcroPushButton, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, rgb, setFontAndSize, StandardFonts } from "pdf-lib";
 import * as fontkit from '@pdf-lib/fontkit';
 import { IDocument } from "./document";
 import { Element, ElementType } from "./elements/element";
@@ -192,6 +192,9 @@ export class PDFFileGenerator {
     if (pdfFont) {
       pdfField.defaultUpdateAppearances(pdfFont)
     }
+    const da = pdfField.acroField.getDefaultAppearance() ?? '';
+    const newDa = da + '\n' + setFontAndSize(StandardFonts.Helvetica, 16).toString(); 
+    pdfField.acroField.setDefaultAppearance(newDa);
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
