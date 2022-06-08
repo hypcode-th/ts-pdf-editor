@@ -97,7 +97,7 @@ export class PDFFileGenerator {
       const font = await this.getFont(page.font ? page.font : StandardFonts.Helvetica)
       pdfPage.setFont(font)
       pdfPage.setFontSize(page.fontSize ? page.fontSize : 16)
-      pdfPage.setFontColor(page.textColor ? colorFromHex(page.textColor)! : rgb(0,0,0))
+      pdfPage.setFontColor(page.textColor ? colorFromHex(page.textColor)! : rgb(0, 0, 0))
 
       // render elements if any
       if (page.elements) {
@@ -188,13 +188,16 @@ export class PDFFileGenerator {
     } else if (field.required === false) {
       pdfField.disableRequired()
     }
-    const pdfFont = await this.getFont(StandardFonts.Helvetica)
-    if (pdfFont) {
-      pdfField.defaultUpdateAppearances(pdfFont)
-    }
+    // const pdfFont = await this.getFont(StandardFonts.Helvetica)
+    // if (pdfFont) {
+    //   pdfField.defaultUpdateAppearances(pdfFont)
+    // }
+    const fontName = field.font ? field.font : StandardFonts.Helvetica
+    const fontSize = field.fontSize ? field.fontSize : 16
     const da = pdfField.acroField.getDefaultAppearance() ?? '';
-    const newDa = da + '\n' + setFontAndSize(StandardFonts.Helvetica, 16).toString(); 
+    const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
     pdfField.acroField.setDefaultAppearance(newDa);
+
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
@@ -224,7 +227,7 @@ export class PDFFileGenerator {
     await this.updatePDFField(field, button)
 
     if (button.fontSize) {
-      field.setFontSize(button.fontSize)
+      // field.setFontSize(button.fontSize)
     }
     if (button.image) {
       const pdfImg = await this.getImage(button.image)
@@ -287,7 +290,7 @@ export class PDFFileGenerator {
       field.select(dropdown.selectedOptions, false)
     }
     if (dropdown.fontSize) {
-      field.setFontSize(dropdown.fontSize)
+      // field.setFontSize(dropdown.fontSize)
     }
     const options = await this.createFieldAppearanceOptions(dropdown)
     field.addToPage(page, options)
@@ -320,7 +323,7 @@ export class PDFFileGenerator {
       field.select(optionList.selectedOptions, false)
     }
     if (optionList.fontSize) {
-      field.setFontSize(optionList.fontSize)
+      // field.setFontSize(optionList.fontSize)
     }
     const options = await this.createFieldAppearanceOptions(optionList)
     field.addToPage(page, options)
@@ -389,7 +392,7 @@ export class PDFFileGenerator {
       field.setAlignment(textField.alignment)
     }
     if (textField.fontSize) {
-      field.setFontSize(textField.fontSize)
+      // field.setFontSize(textField.fontSize)
     }
     if (textField.text) {
       field.setText(textField.text)
