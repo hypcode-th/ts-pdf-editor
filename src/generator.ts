@@ -164,7 +164,7 @@ export class PDFFileGenerator {
     }
   }
 
-  protected updatePDFField(pdfField: PDFField, field: Field) {
+  protected async updatePDFField(pdfField: PDFField, field: Field) {
     if (field.exported === true) {
       pdfField.enableExporting()
     } else if (field.exported === false) {
@@ -179,6 +179,10 @@ export class PDFFileGenerator {
       pdfField.enableRequired()
     } else if (field.required === false) {
       pdfField.disableRequired()
+    }
+    const pdfFont = await this.getFont(StandardFonts.Helvetica)
+    if (pdfFont) {
+      pdfField.defaultUpdateAppearances(pdfFont)
     }
   }
 
@@ -206,11 +210,7 @@ export class PDFFileGenerator {
   protected async addButton(page: PDFPage, button: Button): Promise<void> {
     const form = page.doc.getForm()
     const field = form.createButton(button.name)
-    this.updatePDFField(field, button)
-    const pdfFont = await this.getFont(StandardFonts.Helvetica)
-    if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
-    }
+    await this.updatePDFField(field, button)
     
     if (button.fontSize) {
       field.setFontSize(button.fontSize)
@@ -228,7 +228,8 @@ export class PDFFileGenerator {
   protected async addCheckBox(page: PDFPage, checkBox: CheckBox): Promise<void> {
     const form = page.doc.getForm()
     const field = form.createCheckBox(checkBox.name)
-    this.updatePDFField(field, checkBox)
+    await this.updatePDFField(field, checkBox)
+
     if (checkBox.checked === true) {
       field.check()
     } else if (checkBox.checked === false) {
@@ -241,12 +242,8 @@ export class PDFFileGenerator {
   protected async addDropdown(page: PDFPage, dropdown: Dropdown): Promise<void> {
     const form = page.doc.getForm()
     const field = form.createDropdown(dropdown.name)
-    this.updatePDFField(field, dropdown)
-    const pdfFont = await this.getFont(StandardFonts.Helvetica)
-    if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
-    }
-
+    await this.updatePDFField(field, dropdown)
+    
     if (dropdown.options) {
       field.setOptions(dropdown.options)
     }
@@ -288,12 +285,8 @@ export class PDFFileGenerator {
   protected async addOptionList(page: PDFPage, optionList: OptionList): Promise<void> {
     const form = page.doc.getForm()
     const field = form.createOptionList(optionList.name)
-    this.updatePDFField(field, optionList)
-    const pdfFont = await this.getFont(StandardFonts.Helvetica)
-    if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
-    }
-
+    await this.updatePDFField(field, optionList)
+    
     if (optionList.options) {
       field.setOptions(optionList.options)
     }
@@ -326,6 +319,7 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createRadioGroup(radioGroup.name)
     this.updatePDFField(field, radioGroup)
+
     if (radioGroup.options) {
       for (const radioOption of radioGroup.options) {
         const options = await this.createFieldAppearanceOptions(radioOption)
@@ -341,11 +335,7 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createTextField(textField.name)
     this.updatePDFField(field, textField)
-    const pdfFont = await this.getFont(StandardFonts.Helvetica)
-    if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
-    }
-
+    
     if (textField.combing === true) {
       field.enableCombing()
     } else if (textField.combing === false) {
