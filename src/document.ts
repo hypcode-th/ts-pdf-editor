@@ -1,4 +1,4 @@
-import { PageSizes, PDFDocument, PDFPage } from "pdf-lib"
+import { PageSizes, PDFDocument, PDFPage, StandardFonts } from "pdf-lib"
 import { Md5 } from "ts-md5"
 import { IPage, Page } from "./page"
 import { PDFFileGenerator, PDFFileGeneratorOption } from "./generator";
@@ -18,8 +18,10 @@ export interface IDocument {
   pages: IPage[]
   fileReferences: PDFFileReference[]
 
-  // The default page size
+  // The default value
   defaultPageSize?: Size
+  defaultFont?: string
+  defaultFontSize?: number
 }
 
 export class Document {
@@ -30,11 +32,15 @@ export class Document {
 
   // The default page size
   public defaultPageSize: Size
+  public defaultFont: string
+  public defaultFontSize: number
 
   public constructor(data?: IDocument) {
     this.pages = (data?.pages) ? data.pages.map((p) => { return new Page(p) }) : []
     this.fileReferences = (data?.fileReferences) ? data.fileReferences : []
     this.defaultPageSize = (data?.defaultPageSize) ? data.defaultPageSize : { width: PageSizes.A4[0], height: PageSizes.A4[1] }
+    this.defaultFont = (data?.defaultFont) ? data.defaultFont : StandardFonts.Helvetica
+    this.defaultFontSize = (data?.defaultFontSize) ? data.defaultFontSize : 16
   }
 
   public destroy() {
@@ -129,6 +135,8 @@ export class Document {
   public insertPage(idx: number, page?: Page): Page {
     let p = (page) ? page : new Page({
       pageSize: this.defaultPageSize,
+      font: this.defaultFont,
+      fontSize: this.defaultFontSize
     })
     this.pages.splice(idx, 0, p)  
     return p

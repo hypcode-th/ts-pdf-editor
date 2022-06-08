@@ -1,4 +1,4 @@
-import { degrees, PageSizes, PDFAcroPushButton, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, StandardFonts } from "pdf-lib";
+import { degrees, PageSizes, PDFAcroPushButton, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, rgb, StandardFonts } from "pdf-lib";
 import * as fontkit from '@pdf-lib/fontkit';
 import { IDocument } from "./document";
 import { Element, ElementType } from "./elements/element";
@@ -92,6 +92,14 @@ export class PDFFileGenerator {
       } else {
         pdfPage = this.pdfDoc.addPage(PageSizes.A4)
       }
+
+      // set the default style of the page
+      const font = await this.getFont(page.font ? page.font : StandardFonts.Helvetica)
+      pdfPage.setFont(font)
+      pdfPage.setFontSize(page.fontSize ? page.fontSize : 16)
+      pdfPage.setFontColor(page.textColor ? colorFromHex(page.textColor)! : rgb(0,0,0))
+
+      // render elements if any
       if (page.elements) {
         for (let elem of page.elements) {
           await this.createPDFElement(pdfPage, elem)
@@ -211,7 +219,7 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createButton(button.name)
     await this.updatePDFField(field, button)
-    
+
     if (button.fontSize) {
       field.setFontSize(button.fontSize)
     }
@@ -243,7 +251,7 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createDropdown(dropdown.name)
     await this.updatePDFField(field, dropdown)
-    
+
     if (dropdown.options) {
       field.setOptions(dropdown.options)
     }
@@ -286,7 +294,7 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createOptionList(optionList.name)
     await this.updatePDFField(field, optionList)
-    
+
     if (optionList.options) {
       field.setOptions(optionList.options)
     }
@@ -335,7 +343,7 @@ export class PDFFileGenerator {
     const form = page.doc.getForm()
     const field = form.createTextField(textField.name)
     this.updatePDFField(field, textField)
-    
+
     if (textField.combing === true) {
       field.enableCombing()
     } else if (textField.combing === false) {

@@ -1,13 +1,15 @@
 import { Size } from "./document"
 import { Element } from "./elements/element"
-import { Document } from "./document"
-import { PDFRenderingContext } from "./renderer"
+import { StandardFonts } from "pdf-lib"
 
 export interface IPage {
   refFileId?: string
   refPageIndex?: number
   elements?: Element[]
   pageSize: Size
+  font?: string 
+  fontSize?: number
+  textColor?: string
 }
 
 export class Page {
@@ -15,12 +17,18 @@ export class Page {
   private refPageIndex?: number
   private elements: Element[]
   public pageSize: Size
+  public font: string 
+  public fontSize: number
+  public textColor: string
 
   constructor(data: IPage) {
     this.refFileId = data?.refFileId
     this.refPageIndex = data?.refPageIndex
     this.elements = data?.elements ? data?.elements : []
     this.pageSize = data?.pageSize
+    this.font = (data?.font) ? data.font : StandardFonts.Helvetica
+    this.fontSize = (data?.fontSize) ? data.fontSize : 16
+    this.textColor = (data.textColor) ? data.textColor : '#000000FF'
   }
 
   public serialize(): IPage {
@@ -28,7 +36,10 @@ export class Page {
       refFileId: this.refFileId,
       refPageIndex: this.refPageIndex, 
       elements: this.elements,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
+      font: this.font,
+      fontSize: this.fontSize,
+      textColor: this.textColor
     }
   }
 
