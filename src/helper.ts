@@ -1,4 +1,5 @@
-import { Color, createPDFAcroFields, FieldAlreadyExistsError, InvalidFieldNamePartError, PDFAcroField, PDFAcroForm, PDFAcroNonTerminal, PDFForm, PDFRef, rgb } from "pdf-lib";
+import { adjustDimsForRotation, AnnotationFlags, AppearanceProviderFor, cmyk, Color, colorToComponents, componentsToColor, createPDFAcroFields, defaultTextFieldAppearanceProvider, drawButton, drawTextField, FieldAlreadyExistsError, findLastMatch, grayscale, InvalidFieldNamePartError, normalizeAppearance, PDFAcroField, PDFAcroForm, PDFAcroNonTerminal, PDFContext, PDFFont, PDFForm, PDFField, PDFPage, PDFRef, PDFSignature, PDFWidgetAnnotation, reduceRotation, rgb, rotateInPlace, rotateRectangle, Rotation, setFillingColor, TextPosition, toDegrees, PDFOperator, AppearanceMapping } from "pdf-lib";
+import { FieldAppearanceOptions } from "pdf-lib/cjs/api/form/PDFField";
 
 export function Uint8ArrayToBuffer(data: Uint8Array): Buffer {
   return ArrayBuffer.isView(data) ? Buffer.from(data.buffer, data.byteOffset, data.byteLength) : Buffer.from(data)
@@ -97,3 +98,53 @@ export function addFieldToParent(
   parent.addField(fieldRef);
   field.setParent(parentRef);
 };
+
+export function createWidget(page: PDFPage, field: PDFAcroField, context: PDFContext, ref: PDFRef, options: FieldAppearanceOptions): PDFWidgetAnnotation {
+  const textColor = options.textColor;
+  const backgroundColor = options.backgroundColor;
+  const borderColor = options.borderColor;
+  const borderWidth = options.borderWidth ? options.borderWidth : 0;
+  const degreesAngle = options.rotate ? toDegrees(options.rotate) : 0;
+  const x = options.x ? options.x : 0;
+  const y = options.y ? options.y : 0;
+  const width = (options.width ? options.width : 0) + borderWidth;
+  const height = (options.height ? options.height : 0) + borderWidth;
+  const hidden = Boolean(options.hidden);
+  const pageRef = page.ref;
+
+  // Create a widget for this field
+  const widget = PDFWidgetAnnotation.create(context, ref);
+
+  // Set widget properties
+  const rect = rotateRectangle(
+    { x, y, width, height },
+    borderWidth,
+    degreesAngle,
+  );
+  widget.setRectangle(rect);
+
+  if (pageRef) widget.setP(pageRef);
+
+  const ac = widget.getOrCreateAppearanceCharacteristics();
+  if (backgroundColor) {
+    ac.setBackgroundColor(colorToComponents(backgroundColor));
+  }
+  ac.setRotation(degreesAngle);
+  if (borderColor) ac.setBorderColor(colorToComponents(borderColor));
+
+  const bs = widget.getOrCreateBorderStyle();
+  if (borderWidth !== undefined) bs.setWidth(borderWidth);
+
+  widget.setFlagTo(AnnotationFlags.Print, true);
+  widget.setFlagTo(AnnotationFlags.Hidden, hidden);
+  widget.setFlagTo(AnnotationFlags.Invisible, false);
+
+  // Set acrofield properties
+  if (textColor) {
+    const da = field.getDefaultAppearance() ?? '';
+    const newDa = da + '\n' + setFillingColor(textColor).toString();
+    field.setDefaultAppearance(newDa);
+  }
+
+  return widget;
+}
