@@ -162,7 +162,7 @@ export class Document {
     return this.fileReferences
   }
 
-  protected getRenderingContext(refFileId: string): PDFRenderingContext | undefined {
+  protected async getRenderingContext(refFileId: string): Promise<PDFRenderingContext | undefined> {
     let ctx = this.renderContextDict.get(refFileId)
     if (ctx) {
       return ctx
@@ -172,7 +172,7 @@ export class Document {
     })
     if (!refFile) return undefined 
 
-    ctx = new PDFRenderingContext(refFile.src)
+    ctx = await PDFRenderingContext.create(refFile.src)
     this.renderContextDict.set(refFileId, ctx)
     return ctx
   }
@@ -182,7 +182,7 @@ export class Document {
     const refFileId = page.getRefFileId() 
     const refPageIndex = page.getRefPageIndex()
     if (refFileId && (refPageIndex !== undefined && refPageIndex >= 0)) {
-      const ctx = this.getRenderingContext(refFileId)
+      const ctx = await this.getRenderingContext(refFileId)
       if (ctx) {
         await ctx.renderPage(refPageIndex, canvas, scale)
         return

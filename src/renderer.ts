@@ -11,18 +11,26 @@ export class PDFRenderingContext {
     //PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = PDFRenderingContext.pdfjsWorker
   }
 
-  constructor(src: string | Uint8Array | ArrayBuffer) {
+  private constructor(pdfInstance: any) {
+    this.pdfInstance = pdfInstance
+  }
+
+  public static create = async (src: string | Uint8Array | ArrayBuffer): Promise<PDFRenderingContext> => {
     let data = src
     const task = PDFRenderingContext.pdfJS.getDocument({ data })
-    task.promise.then(
-      (pdf: any) => {
-        this.pdfInstance = pdf
-      },
-      function (reason: any) {
-        console.error(reason)
-      }
-    )
-  }
+    let promise = new Promise<PDFRenderingContext>((resolve, reject) => {
+      task.promise.then(
+        (pdf: any) => {
+          resolve(new PDFRenderingContext(pdf))
+        },
+        function (reason: any) {
+          console.error(reason)
+          reject(reason)
+        }
+      )
+    })
+    return await promise
+  } 
 
   public getPDFInstance(): any {
     return this.pdfInstance
