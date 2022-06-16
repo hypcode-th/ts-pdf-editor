@@ -44,7 +44,7 @@ export class Document {
   }
 
   public destroy() {
-    for(let value of this.renderContextDict.values()) {
+    for (let value of this.renderContextDict.values()) {
       value.destroy()
     }
     this.renderContextDict.clear()
@@ -73,12 +73,12 @@ export class Document {
       }
       refFileId = md5.end(false) as string
     }
-    
+
     pages = pdfDoc.getPages().map((pdfPage: PDFPage, idx: number) => {
       const size = pdfPage.getSize()
       return {
         refFileId: refFileId,
-        refPageIndex: idx, 
+        refPageIndex: idx,
         elements: [],
         pageSize: size
       }
@@ -139,7 +139,7 @@ export class Document {
       fontSize: this.defaultFontSize,
       textColor: '#000000'
     })
-    this.pages.splice(idx, 0, p)  
+    this.pages.splice(idx, 0, p)
     return p
   }
 
@@ -151,7 +151,7 @@ export class Document {
     return undefined
   }
 
-  public reorderPage(oldIndex:number, newIdx: number) {
+  public reorderPage(oldIndex: number, newIdx: number) {
     const pages = this.pages.splice(oldIndex, 1)
     if (pages.length > 0) {
       this.pages.splice(newIdx, 0, pages[0])
@@ -170,25 +170,14 @@ export class Document {
     const refFile = this.fileReferences.find((value, idx) => {
       return value.refId === refFileId
     })
-    if (!refFile) return undefined 
+    if (!refFile) return undefined
 
     ctx = await PDFRenderingContext.create(refFile.src)
     this.renderContextDict.set(refFileId, ctx)
     return ctx
   }
 
-  public async renderPage(pageIndex: number, canvas: HTMLCanvasElement, scale?: number): Promise<void> {
-    const page = this.getPage(pageIndex)
-    const refFileId = page.getRefFileId() 
-    const refPageIndex = page.getRefPageIndex()
-    if (refFileId && (refPageIndex !== undefined && refPageIndex >= 0)) {
-      const ctx = await this.getRenderingContext(refFileId)
-      if (ctx) {
-        await ctx.renderPage(refPageIndex, canvas, scale)
-        return
-      }
-    } 
-
+  private renderBlank(page: Page, canvas: HTMLCanvasElement, scale?: number) {
     // Render empty page
     const { width, height } = page.pageSize
     const iHeight = Math.floor(height * (scale || 1))
@@ -201,7 +190,23 @@ export class Document {
     const context = canvas.getContext('2d')
     if (context) {
       context.fillStyle = "#FFFFFF";
-      context.fillRect(0, 0, iWidth, iHeight);  
+      context.fillRect(0, 0, iWidth, iHeight);
+    }
+  }
+
+  public async renderPage(pageIndex: number, canvas: HTMLCanvasElement, scale?: number) {
+    const page = this.getPage(pageIndex)
+    const refFileId = page.getRefFileId()
+    const refPageIndex = page.getRefPageIndex()
+    let renderingContext: any = null
+    if (refFileId && (refPageIndex !== undefined && refPageIndex >= 0)) {
+      renderingContext = await this.getRenderingContext(refFileId)
+    } 
+    if (renderingContext) {
+      await renderingContext.renderPage(refPageIndex, canvas, scale)
+    } else {
+      console.log("Blank")
+      this.renderBlank(page, canvas, scale)
     }
   }
 }
