@@ -1,23 +1,20 @@
 
+const pdfJS = require('pdfjs-dist/legacy/build/pdf')
+const pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.min')
+const workerSrc = process.env.PDFJS_WORKER_SRC
+pdfJS.GlobalWorkerOptions.workerSrc = (workerSrc) ? workerSrc : 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.14.305/legacy/build/pdf.worker.min.js' 
+
 export class PDFRenderingContext {
 
   private pdfInstance: any
-
-  private static pdfJS = require('pdfjs-dist/legacy/build/pdf')
-  private static pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.min')
-  static {
-    const workerSrc = process.env.PDFJS_WORKER_SRC
-    PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = (workerSrc) ? workerSrc : 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.14.305/legacy/build/pdf.worker.min.js' 
-    //PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = PDFRenderingContext.pdfjsWorker
-  }
-
+  
   private constructor(pdfInstance: any) {
     this.pdfInstance = pdfInstance
   }
 
   public static create = async (src: string | Uint8Array | ArrayBuffer): Promise<PDFRenderingContext> => {
     let data = src
-    const task = PDFRenderingContext.pdfJS.getDocument({ data })
+    const task = pdfJS.getDocument({ data })
     let promise = new Promise<PDFRenderingContext>((resolve, reject) => {
       task.promise.then(
         (pdf: any) => {

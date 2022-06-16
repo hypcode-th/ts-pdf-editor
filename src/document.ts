@@ -205,7 +205,6 @@ export class Document {
     if (renderingContext) {
       await renderingContext.renderPage(refPageIndex, canvas, scale)
     } else {
-      console.log("Blank")
       this.renderBlank(page, canvas, scale)
     }
   }
