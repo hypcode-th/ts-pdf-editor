@@ -1,5 +1,5 @@
 {
-  "name": "ts-pdf-editor",
+  "name": "@hypcode-th/ts-pdf-editor",
   "version": "1.0.0",
   "description": "PDF editor by Hycode",
   "main": "lib/index.js",
@@ -23,7 +23,7 @@
     "PDF",
     "PDF Editor"
   ],
-  "author": "Hypcode Co., Ltd.",
+  "author": "kritsana@hypcode.co",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/hypcode-th/ts-pdf-editor/issues"
@@ -47,5 +47,8 @@
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^2.14.305",
     "ts-md5": "^1.2.11"
+  },
+  "directories": {
+    "lib": "lib"
   }
 }
