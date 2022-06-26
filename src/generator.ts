@@ -15,6 +15,7 @@ import { FieldAppearanceOptions } from "pdf-lib/cjs/api/form/PDFField";
 import { Dropdown } from "./elements/fields/dropdown";
 import { OptionList } from "./elements/fields/optionlist";
 import { Text } from "./elements/text";
+import { Circle, Ellipse, Line, Rectangle, Square, SVGPath } from "./elements/shape";
 
 export interface PDFFileGeneratorOption {
   // mapping between custom font name and the font file path or binary of the font file
@@ -132,6 +133,18 @@ export class PDFFileGenerator {
         return await this.drawImage(page, elem)
       case ElementType.Text:
         return await this.drawText(page, elem)
+      case ElementType.SVGPath:
+        return await this.drawSVGPath(page, elem)
+      case ElementType.Line:
+        return await this.drawLine(page, elem)
+      case ElementType.Circle:
+        return await this.drawCircle(page, elem)
+      case ElementType.Ellipse:
+        return await this.drawEllipse(page, elem)
+      case ElementType.Rectangle:
+        return await this.drawRectangle(page, elem)
+      case ElementType.Square:
+        return await this.drawSquare(page, elem)
     }
   }
 
@@ -477,6 +490,215 @@ export class PDFFileGenerator {
       opacity,
       blendMode,
       wordBreaks,
+    })
+  }
+
+  protected async drawCircle(page: PDFPage, circle: Circle): Promise<void> {
+    const {
+      blendMode,
+      borderColor,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color,
+      opacity,
+      size,
+      x,
+      y,
+    } = circle
+    page.drawCircle({
+      blendMode,
+      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color: color ? colorFromHex(color) : undefined,
+      opacity,
+      size,
+      x,
+      y,
+    })
+  }
+
+  protected async drawEllipse(page: PDFPage, ellipse: Ellipse): Promise<void> {
+    const {
+      blendMode,
+      borderColor,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color,
+      opacity,
+      rotate,
+      x,
+      xScale,
+      y,
+      yScale,
+    } = ellipse
+    page.drawEllipse({
+      blendMode,
+      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color: color ? colorFromHex(color) : undefined,
+      opacity,
+      rotate: rotate ? degrees(rotate) : undefined,
+      x,
+      xScale,
+      y,
+      yScale,
+    })
+  } 
+
+  protected async drawLine(page: PDFPage, line: Line): Promise<void> {
+    const {
+      blendMode,
+      color,
+      dashArray,
+      dashPhase,
+      end,
+      lineCap,
+      opacity,
+      start,
+      thickness,
+    } = line
+    page.drawLine({
+      blendMode,
+      color: color ? colorFromHex(color) : undefined,
+      dashArray,
+      dashPhase,
+      end,
+      lineCap,
+      opacity,
+      start,
+      thickness,
+    })
+  }
+
+  protected async drawRectangle(page: PDFPage, rectangle: Rectangle): Promise<void> {
+    const {
+      blendMode,
+      borderColor,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color,
+      height,
+      opacity,
+      rotate,
+      width,
+      x,
+      xSkew,
+      y,
+      ySkew,
+    } = rectangle
+    page.drawRectangle({
+      blendMode,
+      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color: color ? colorFromHex(color) : undefined,
+      height,
+      opacity,
+      rotate: rotate ? degrees(rotate) : undefined,
+      width,
+      x,
+      xSkew: xSkew ? degrees(xSkew) : undefined,
+      y,
+      ySkew: ySkew ? degrees(ySkew) : undefined,
+    })
+  }
+
+  protected async drawSquare(page: PDFPage, square: Square): Promise<void> {
+    const {
+      blendMode,
+      borderColor,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color,
+      opacity,
+      rotate,
+      size,
+      x,
+      xSkew,
+      y,
+      ySkew,
+    } = square
+    page.drawSquare({
+      blendMode,
+      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color: color ? colorFromHex(color) : undefined,
+      opacity,
+      rotate: rotate ? degrees(rotate) : undefined,
+      size,
+      x,
+      xSkew: xSkew ? degrees(xSkew) : undefined,
+      y,
+      ySkew: ySkew ? degrees(ySkew) : undefined,
+    })
+  }
+
+  protected async drawSVGPath(page: PDFPage, svgPath: SVGPath): Promise<void> {
+    if (!svgPath.points || svgPath.points.length === 0) return
+    const svg = svgPath.points.reduce((prev, pt, idx): string => {
+      if(idx === 0) {
+        return `M ${pt.x},${pt.y}`
+      } else {
+        return prev + ` L ${pt.x},${pt.y}`
+      }
+    }, '')
+    svgPath.borderColor
+    const { 
+      blendMode,
+      borderColor,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color,
+      opacity,
+      rotate,
+      scale,
+      x,
+      y, 
+    } = svgPath
+    page.drawSvgPath(svg, {
+      blendMode,
+      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+      borderDashArray,
+      borderDashPhase,
+      borderLineCap,
+      borderOpacity,
+      borderWidth,
+      color: color ? colorFromHex(color) : undefined,
+      opacity,
+      rotate: rotate ? degrees(rotate) : undefined,
+      scale,
+      x,
+      y, 
     })
   }
 }

@@ -1,4 +1,4 @@
-import { BlendMode } from "pdf-lib"
+import { BlendMode, LineCapStyle } from "pdf-lib"
 
 export enum ElementType {
   Text = "text",
@@ -6,8 +6,9 @@ export enum ElementType {
   Rectangle = "rectangle",
   Square = "square",
   Circle = "circle",
-  Oval = "oval",
+  Ellipse = "ellipse",
   Line = "line",
+  SVGPath = "svgpath",
   CheckBox = "checkbox",
   Button = "buton",
   Dropdown = "dropdown",
