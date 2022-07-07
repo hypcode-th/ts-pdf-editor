@@ -11,5 +11,6 @@ export * from './elements/fields/signature';
 export * from './elements/fields/textfield';
 export * from './elements/image';
 export * from './elements/text';
+export * from './elements/shape';
 export * from './generator';
 export * from 'pdf-lib'
