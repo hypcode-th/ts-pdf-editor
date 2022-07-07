@@ -74,4 +74,14 @@ export class Page {
   public getRefPageIndex(): number | undefined {
     return this.refPageIndex
   }
+
+  public deleteElements(shouldDelete: (elem: Element, idx: number) => boolean) {
+    this.elements = this.elements.filter((value, index) => {
+      return !shouldDelete(value, index)
+    })
+  }
+
+  public addElements(elements: Element[]) {
+    this.elements = this.elements.concat(elements)
+  }
 }
