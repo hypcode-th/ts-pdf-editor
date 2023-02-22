@@ -46,7 +46,7 @@
     "@pdf-lib/standard-fonts": "^1.0.0",
     "class-transformer": "^0.5.1",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^2.14.305",
+    "pdfjs-dist": "2.16.105",
     "ts-md5": "^1.2.11"
   },
   "directories": {

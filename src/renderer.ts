@@ -7,7 +7,7 @@ export class PDFRenderingContext {
   private static pdfjsWorker = require('pdfjs-dist/legacy/build/pdf.worker.min')
   static {
     const workerSrc = process.env.PDFJS_WORKER_SRC
-    PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = (workerSrc) ? workerSrc : 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.15.349/legacy/build/pdf.worker.min.js'
+    PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = (workerSrc) ? workerSrc : 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/legacy/build/pdf.worker.min.js'
     //PDFRenderingContext.pdfJS.GlobalWorkerOptions.workerSrc = PDFRenderingContext.pdfjsWorker
   }
 
