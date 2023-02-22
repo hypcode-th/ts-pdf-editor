@@ -208,4 +208,10 @@ export class Document {
       this.renderBlank(page, canvas, scale)
     }
   }
+
+  public setFieldValue(fieldName: string, value: any) {
+    this.pages.forEach((p: Page) => {
+      p.setFieldValue(fieldName, value)
+    })
+  }
 }

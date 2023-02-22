@@ -84,4 +84,13 @@ export class Page {
   public addElements(elements: Element[]) {
     this.elements = this.elements.concat(elements)
   }
+
+  public setFieldValue(fieldName: string, value: any) {
+    if (!this.elements || this.elements.length === 0) return
+    for (let i=0; i<this.elements.length; i++) {
+      if ((this.elements[i] as any).name === fieldName) {
+        (this.elements[i] as any).value = value
+      }
+    }
+  }
 }
