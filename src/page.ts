@@ -1,5 +1,5 @@
 import { Size } from "./document"
-import { Element } from "./elements/element"
+import { Element, ElementType } from "./elements/element"
 import { StandardFonts } from "pdf-lib"
 
 export interface IPage {
@@ -88,8 +88,37 @@ export class Page {
   public setFieldValue(fieldName: string, value: any) {
     if (!this.elements || this.elements.length === 0) return
     for (let i=0; i<this.elements.length; i++) {
+      const elem = this.elements[i]
       if ((this.elements[i] as any).name === fieldName) {
-        (this.elements[i] as any).value = value
+        switch (this.elements[i].elemType) {
+          case ElementType.TextField:
+            (this.elements[i] as any).text = `${value}`
+            break;
+          case ElementType.RadioGroup:
+            (this.elements[i] as any).selectedOption = value
+            break;
+          case ElementType.CheckBox:
+            if (typeof value === 'boolean') {
+              (this.elements[i] as any).checked = value
+            } else if (typeof value === 'string') {
+              (this.elements[i] as any).checked = (value.toLowerCase() === 'true' || value.toLowerCase() === 'yes')
+            } else if (typeof value === 'number') {
+              (this.elements[i] as any).checked = (value !== 0)
+            }
+            break;
+          case ElementType.OptionList:
+          case ElementType.Dropdown:
+            if (Array.isArray(value)) { 
+              (this.elements[i] as any).selectedOptions = value.map(v => `${v}`)
+            } else if (typeof value === 'string') {
+              (this.elements[i] as any).selectedOptions = `${value}`.split(',').map(v => v.trim())
+            } else {
+              (this.elements[i] as any).selectedOptions = [`${value}`]
+            }
+            break;
+          default:
+            break;
+        }
       }
     }
   }

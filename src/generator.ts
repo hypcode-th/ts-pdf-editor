@@ -353,8 +353,8 @@ export class PDFFileGenerator {
         field.addOptionToPage(radioOption.option, page, options)
       }
     }
-    if (radioGroup.selectedOpton) {
-      field.select(radioGroup.selectedOpton)
+    if (radioGroup.selectedOption) {
+      field.select(radioGroup.selectedOption)
     }
   }
 

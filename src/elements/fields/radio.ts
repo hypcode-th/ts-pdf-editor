@@ -7,5 +7,5 @@ export interface RadioOption extends StyledElement {
 
 export interface RadioGroup extends Field {
   options?: RadioOption[]
-  selectedOpton?: string
+  selectedOption?: string
 }
