@@ -3,6 +3,7 @@ import { Md5 } from "ts-md5"
 import { IPage, Page } from "./page"
 import { PDFFileGenerator, PDFFileGeneratorOption } from "./generator";
 import { PDFRenderingContext } from "./renderer";
+import { Element } from "./elements/element";
 
 export interface Size {
   width: number
@@ -213,5 +214,15 @@ export class Document {
     this.pages.forEach((p: Page) => {
       p.setFieldValue(fieldName, value)
     })
+  }
+
+  public findFieldsByName(name: string): Element[] {
+    return this.pages.reduce<Element[]>((prev: Element[], curr: Page) => {
+      const elems = curr.findFieldsByName(name)
+      if (elems.length > 0) {
+        prev = prev.concat(elems)
+      }
+      return prev
+    }, [] as Element[])
   }
 }

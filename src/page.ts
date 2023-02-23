@@ -85,6 +85,10 @@ export class Page {
     this.elements = this.elements.concat(elements)
   }
 
+  public findFieldsByName(name: string): Element[] {
+    return this.elements.filter(e => (e as any).name === name)
+  }
+
   public setFieldValue(fieldName: string, value: any) {
     if (!this.elements || this.elements.length === 0) return
     for (let i=0; i<this.elements.length; i++) {
@@ -93,6 +97,9 @@ export class Page {
         switch (this.elements[i].elemType) {
           case ElementType.TextField:
             (this.elements[i] as any).text = `${value}`
+            break;
+          case ElementType.DateInput:
+            (this.elements[i] as any).text = new Date(value)
             break;
           case ElementType.RadioGroup:
             (this.elements[i] as any).selectedOption = value

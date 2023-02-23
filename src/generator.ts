@@ -16,6 +16,8 @@ import { Dropdown } from "./elements/fields/dropdown";
 import { OptionList } from "./elements/fields/optionlist";
 import { Text } from "./elements/text";
 import { Circle, Ellipse, Line, Rectangle, Square, SVGPath } from "./elements/shape";
+import { DateInput } from "./elements/fields/dateinput";
+import * as moment from 'moment-timezone';
 
 export interface PDFFileGeneratorOption {
   // mapping between custom font name and the font file path or binary of the font file
@@ -117,6 +119,8 @@ export class PDFFileGenerator {
     switch (elem.elemType) {
       case ElementType.TextField:
         return await this.addTextField(page, elem)
+      case ElementType.DateInput:
+        return await this.addDateInput(page, elem)
       case ElementType.CheckBox:
         return await this.addCheckBox(page, elem)
       case ElementType.Signature:
@@ -356,6 +360,58 @@ export class PDFFileGenerator {
     if (radioGroup.selectedOption) {
       field.select(radioGroup.selectedOption)
     }
+  }
+
+  protected async addDateInput(page: PDFPage, dateInput: DateInput): Promise<void> {
+    const form = page.doc.getForm()
+    const field = form.createTextField(dateInput.name)
+    this.updatePDFField(field, dateInput)
+
+    if (dateInput.combing === true) {
+      field.enableCombing()
+    } else if (dateInput.combing === false) {
+      field.disableCombing()
+    }
+    
+    if (dateInput.multiline === true) {
+      field.enableMultiline()
+    } else if (dateInput.multiline === false) {
+      field.disableMultiline()
+    }
+    
+    if (dateInput.scrolling === true) {
+      field.enableScrolling()
+    } else if (dateInput.scrolling === false) {
+      field.disableScrolling()
+    }
+    
+    if (dateInput.maxLength) {
+      field.setMaxLength(dateInput.maxLength)
+    }
+    if (dateInput.alignment) {
+      field.setAlignment(dateInput.alignment)
+    }
+    if (dateInput.fontSize) {
+      // field.setFontSize(textField.fontSize)
+    }
+
+    field.disableFileSelection()
+    field.disablePassword()
+    field.disableRichFormatting()
+    field.disableSpellChecking()
+
+    if (dateInput.date) {
+      const formatter = dateInput.format ?? "YYYY/MM/DD HH:mm:ss"
+      if (dateInput.timezone) {
+        const text = moment(dateInput.date).tz(dateInput.timezone).format(formatter)
+        field.setText(text)  
+      } else {
+        const text = moment(dateInput.date).utc().format(formatter)
+        field.setText(text)  
+      }
+    }
+    const options = await this.createFieldAppearanceOptions(dateInput)
+    field.addToPage(page, options)
   }
 
   protected async addTextField(page: PDFPage, textField: TextField): Promise<void> {

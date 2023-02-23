@@ -16,6 +16,7 @@ export enum ElementType {
   RadioGroup = "radiogroup",
   TextField = "textfield",
   Signature = "signature",
+  DateInput = "dateinput",
 };
 
 export interface Element {
