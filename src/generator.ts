@@ -392,7 +392,11 @@ export class PDFFileGenerator {
       field.setAlignment(dateInput.alignment)
     }
     if (dateInput.fontSize) {
-      // field.setFontSize(textField.fontSize)
+      try {
+        field.setFontSize(dateInput.fontSize)
+      } catch (error) {
+        console.log(error)
+      }
     }
 
     field.disableFileSelection()
@@ -461,7 +465,11 @@ export class PDFFileGenerator {
       field.setAlignment(textField.alignment)
     }
     if (textField.fontSize) {
-      // field.setFontSize(textField.fontSize)
+      try {
+        field.setFontSize(textField.fontSize)
+      } catch (error) {
+        console.log(error)
+      }
     }
     if (textField.text) {
       field.setText(textField.text)
