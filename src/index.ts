@@ -9,6 +9,7 @@ export * from './elements/fields/optionlist';
 export * from './elements/fields/radio';
 export * from './elements/fields/signature';
 export * from './elements/fields/textfield';
+export * from './elements/fields/dateinput';
 export * from './elements/image';
 export * from './elements/text';
 export * from './elements/shape';
