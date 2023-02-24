@@ -99,7 +99,7 @@ export class Page {
             (this.elements[i] as any).text = `${value}`
             break;
           case ElementType.DateInput:
-            (this.elements[i] as any).text = new Date(value)
+            (this.elements[i] as any).date = new Date(value)
             break;
           case ElementType.RadioGroup:
             (this.elements[i] as any).selectedOption = value
