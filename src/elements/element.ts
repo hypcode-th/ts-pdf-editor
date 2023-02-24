@@ -21,6 +21,17 @@ export enum ElementType {
 
 export interface Element {
   elemType: ElementType
+}
+
+export interface StyledElement extends Element {
+  // styles
+  textColor?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  font?: string;
+  fontSize?: number;
+  hidden?: boolean;
 
   // origin at bottom-left
   x?: number; 
@@ -34,20 +45,20 @@ export interface Element {
   rotate?: number;
 }
 
-export interface StyledElement extends Element {
-  // styles
-  textColor?: string;
-  backgroundColor?: string;
-  borderColor?: string;
-  borderWidth?: number;
-  font?: string;
-  fontSize?: number;
-  hidden?: boolean;
-}
-
 export interface DrawableElement extends Element {
   blendMode?: BlendMode
   opacity?: number
   xSkew?: number; // in degree
   ySkew?: number; // in degree
+
+  // origin at bottom-left
+  x?: number; 
+  y?: number; 
+
+  // size
+  width?: number; 
+  height?: number;
+
+  // rotate in degree ccw around x,y
+  rotate?: number;
 }
