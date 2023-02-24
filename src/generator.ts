@@ -728,9 +728,9 @@ export class PDFFileGenerator {
     if (!svgPath.points || svgPath.points.length === 0) return
     const svg = svgPath.points.reduce((prev, pt, idx): string => {
       if(idx === 0) {
-        return `M ${pt.x},${pt.y}`
+        return `M${pt.x} ${pt.y}`
       } else {
-        return prev + ` L ${pt.x},${pt.y}`
+        return prev + ` L${pt.x} ${pt.y}`
       }
     }, '')
     svgPath.borderColor
