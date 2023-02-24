@@ -23,15 +23,15 @@ export interface Element {
   elemType: ElementType
 
   // origin at bottom-left
-  x?: number 
-  y?: number 
+  x?: number; 
+  y?: number; 
 
   // size
-  width?: number 
-  height?: number
+  width?: number; 
+  height?: number;
 
   // rotate in degree ccw around x,y
-  rotate?: number
+  rotate?: number;
 }
 
 export interface StyledElement extends Element {
