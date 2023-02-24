@@ -759,10 +759,10 @@ export class PDFFileGenerator {
       borderWidth,
       color: color ? colorFromHex(color) : undefined,
       opacity,
-      rotate: rotate ? degrees(rotate) : undefined,
+      rotate: (rotate && !isNaN(rotate)) ? degrees(rotate) : undefined,
       scale,
-      x,
-      y, 
+      x: (x && !isNaN(x)) ? x : undefined,
+      y: (y && !isNaN(y))? y : undefined, 
     })
   }
 }
