@@ -1,4 +1,4 @@
-import { createPDFAcroFields, degrees, PageSizes, PDFAcroPushButton, PDFAcroSignature, PDFArray, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, PDFSignature, rgb, setFontAndSize, StandardFonts } from "pdf-lib";
+import { createPDFAcroFields, degrees, PageSizes, PDFAcroPushButton, PDFAcroSignature, PDFArray, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, PDFPageDrawSVGOptions, PDFSignature, rgb, setFontAndSize, StandardFonts } from "pdf-lib";
 import * as fontkit from '@pdf-lib/fontkit';
 import { IDocument } from "./document";
 import { Element, ElementType } from "./elements/element";
@@ -728,9 +728,9 @@ export class PDFFileGenerator {
     if (!svgPath.points || svgPath.points.length === 0) return
     const svg = svgPath.points.reduce((prev, pt, idx): string => {
       if(idx === 0) {
-        return `M${pt.x} ${pt.y}`
+        return `M ${pt.x},${pt.y}`
       } else {
-        return prev + ` L${pt.x} ${pt.y}`
+        return prev + ` L ${pt.x},${pt.y}`
       }
     }, '')
     svgPath.borderColor
@@ -749,7 +749,7 @@ export class PDFFileGenerator {
       x,
       y, 
     } = svgPath
-    page.drawSvgPath(svg, {
+    const options = {
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
       borderDashArray,
@@ -763,6 +763,8 @@ export class PDFFileGenerator {
       scale,
       x: (x && !isNaN(x)) ? x : undefined,
       y: (y && !isNaN(y))? y : undefined, 
-    })
+    } as PDFPageDrawSVGOptions
+    console.log('DRAW SGV OPTIONS:', options)
+    page.drawSvgPath(svg, options)
   }
 }
