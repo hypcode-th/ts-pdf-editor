@@ -525,7 +525,7 @@ export class PDFFileGenerator {
         y,
         width,
         height,
-        rotate: degrees(rotate),
+        rotate: rotate ? degrees(rotate) : undefined,
         xSkew: xSkew ? degrees(xSkew) : undefined,
         ySkew: ySkew ? degrees(ySkew) : undefined,
         opacity: opacity,
