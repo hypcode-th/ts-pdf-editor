@@ -1,4 +1,4 @@
-import { BlendMode, LineCapStyle } from "pdf-lib"
+import { BlendMode } from "pdf-lib"
 
 export enum ElementType {
   Text = "text",

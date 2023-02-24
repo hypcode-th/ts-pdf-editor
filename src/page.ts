@@ -1,7 +1,6 @@
 import { Size } from "./document";
 import { Element, ElementType } from "./elements/element";
 import { StandardFonts } from "pdf-lib";
-import * as moment from 'moment-timezone';
 
 export interface IPage {
   refFileId?: string
