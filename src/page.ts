@@ -25,11 +25,19 @@ export class Page {
   constructor(data: IPage) {
     this.refFileId = data?.refFileId
     this.refPageIndex = data?.refPageIndex
-    this.elements = data?.elements ? data?.elements : []
     this.pageSize = data?.pageSize
     this.font = (data?.font) ? data.font : StandardFonts.Helvetica
     this.fontSize = (data?.fontSize) ? data.fontSize : 16
     this.textColor = (data.textColor) ? data.textColor : '#000000'
+
+    // Convert type of not correct
+    const elements = data?.elements ? data?.elements : []
+    this.elements = elements.map((elem: any) => {
+      if((elem.elemType === ElementType.DateInput) && (typeof elem.date === 'string')) {
+        return {...elem, date: new Date(elem.date) }
+      }
+      return elem
+    })
   }
 
   public serialize(): IPage {
