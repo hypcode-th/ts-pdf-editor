@@ -764,7 +764,11 @@ export class PDFFileGenerator {
       x: (x && !isNaN(x)) ? x : undefined,
       y: (y && !isNaN(y))? y : undefined, 
     } as PDFPageDrawSVGOptions
-    console.log('DRAW SGV OPTIONS:', options)
+
+    console.log('DRAW SGV', svg)
+    console.log('SGV OPTION', options)
+
+    page.moveTo(0, 0)
     page.drawSvgPath(svg, options)
   }
 }
