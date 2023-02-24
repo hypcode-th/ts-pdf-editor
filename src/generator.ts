@@ -761,8 +761,8 @@ export class PDFFileGenerator {
       opacity,
       rotate: (rotate && !isNaN(rotate)) ? degrees(rotate) : undefined,
       scale,
-      // x: (x && !isNaN(x)) ? x : undefined,
-      // y: (y && !isNaN(y))? y : undefined, 
+      x: (x && !isNaN(x)) ? x : undefined,
+      y: (y && !isNaN(y))? y : undefined, 
     })
   }
 }
