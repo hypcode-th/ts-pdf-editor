@@ -100,19 +100,7 @@ export class Page {
             (this.elements[i] as any).text = `${value}`
             break;
           case ElementType.DateInput:
-            if (typeof value === 'string') {
-              if ((this.elements[i] as any).format) {
-                if ((this.elements[i] as any).timezone) {
-                  (this.elements[i] as any).date = moment.tz(value, (this.elements[i] as any).format, (this.elements[i] as any).timezone)
-                } else {
-                  (this.elements[i] as any).date = moment.tz(value, (this.elements[i] as any).format, 'UTC')
-                }
-              } else {
-                (this.elements[i] as any).date = moment(value)
-              }
-            } else if (value && typeof value.getMonth === 'function') {
-              (this.elements[i] as any).date = new Date(value as Date)
-            }
+            (this.elements[i] as any).date = new Date(value)
             break;
           case ElementType.RadioGroup:
             (this.elements[i] as any).selectedOption = value
