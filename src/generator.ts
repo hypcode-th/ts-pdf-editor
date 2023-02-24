@@ -764,7 +764,7 @@ export class PDFFileGenerator {
       x: (x && !isNaN(x)) ? x : undefined,
       y: (y && !isNaN(y))? y : undefined, 
     } as PDFPageDrawSVGOptions
-    // page.moveTo(0, page.getHeight())
+    page.moveTo(0, page.getHeight())
     page.drawSvgPath(svg, options)
   }
 }
