@@ -23,15 +23,15 @@ export interface Element {
   elemType: ElementType
 
   // origin at bottom-left
-  x?: number | undefined; 
-  y?: number | undefined; 
+  x?: number; 
+  y?: number; 
 
   // size
-  width?: number | undefined; 
-  height?: number | undefined;
+  width?: number; 
+  height?: number;
 
   // rotate in degree ccw around x,y
-  rotate?: number | undefined;
+  rotate?: number;
 }
 
 export interface StyledElement extends Element {
@@ -39,15 +39,15 @@ export interface StyledElement extends Element {
   textColor?: string;
   backgroundColor?: string;
   borderColor?: string;
-  borderWidth?: number | undefined;
+  borderWidth?: number;
   font?: string;
-  fontSize?: number | undefined;
+  fontSize?: number;
   hidden?: boolean;
 }
 
 export interface DrawableElement extends Element {
-  blendMode?: BlendMode;
-  opacity?: number | undefined;
-  xSkew?: number | undefined; // in degree
-  ySkew?: number | undefined; // in degree
+  blendMode?: BlendMode
+  opacity?: number
+  xSkew?: number; // in degree
+  ySkew?: number; // in degree
 }
