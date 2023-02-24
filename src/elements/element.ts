@@ -21,6 +21,17 @@ export enum ElementType {
 
 export interface Element {
   elemType: ElementType
+
+  // origin at bottom-left
+  x?: number; 
+  y?: number; 
+
+  // size
+  width?: number; 
+  height?: number;
+
+  // rotate in degree ccw around x,y
+  rotate?: number;
 }
 
 export interface StyledElement extends Element {
@@ -32,17 +43,6 @@ export interface StyledElement extends Element {
   font?: string;
   fontSize?: number;
   hidden?: boolean;
-
-  // origin at bottom-left
-  x?: number; 
-  y?: number; 
-
-  // size
-  width?: number; 
-  height?: number;
-
-  // rotate in degree ccw around x,y
-  rotate?: number;
 }
 
 export interface DrawableElement extends Element {
@@ -50,15 +50,4 @@ export interface DrawableElement extends Element {
   opacity?: number
   xSkew?: number; // in degree
   ySkew?: number; // in degree
-
-  // origin at bottom-left
-  x?: number; 
-  y?: number; 
-
-  // size
-  width?: number; 
-  height?: number;
-
-  // rotate in degree ccw around x,y
-  rotate?: number;
 }
