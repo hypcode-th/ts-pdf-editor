@@ -14,6 +14,7 @@ export enum ElementType {
   Dropdown = "dropdown",
   OptionList = "optionlist",
   RadioGroup = "radiogroup",
+  RadioOption = "radiooption",
   TextField = "textfield",
   Signature = "signature",
   DateInput = "dateinput",
