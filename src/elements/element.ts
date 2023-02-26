@@ -23,6 +23,10 @@ export enum ElementType {
 export interface Element {
   elemType: ElementType
 
+  // element id for reference
+  // if specify, it must be unique e.g. UUID
+  id?: string
+
   // origin at bottom-left
   x?: number; 
   y?: number; 
