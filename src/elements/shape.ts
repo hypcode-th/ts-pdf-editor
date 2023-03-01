@@ -25,7 +25,7 @@ export interface Ellipse extends DrawablePath {
   yScale?: number;
 }
 
-export interface Rectangle extends DrawablePath {}
+// export interface Rectangle extends DrawablePath {}
 
 export interface Square extends DrawablePath {
   size?: number;

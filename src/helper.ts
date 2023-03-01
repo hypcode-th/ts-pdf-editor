@@ -1,17 +1,34 @@
-import { adjustDimsForRotation, AnnotationFlags, AppearanceProviderFor, cmyk, Color, colorToComponents, componentsToColor, createPDFAcroFields, defaultTextFieldAppearanceProvider, drawButton, drawTextField, FieldAlreadyExistsError, findLastMatch, grayscale, InvalidFieldNamePartError, normalizeAppearance, PDFAcroField, PDFAcroForm, PDFAcroNonTerminal, PDFContext, PDFFont, PDFForm, PDFField, PDFPage, PDFRef, PDFSignature, PDFWidgetAnnotation, reduceRotation, rgb, rotateInPlace, rotateRectangle, Rotation, setFillingColor, TextPosition, toDegrees, PDFOperator, AppearanceMapping } from "pdf-lib";
-import { FieldAppearanceOptions } from "pdf-lib/cjs/api/form/PDFField";
+import {
+  AnnotationFlags,
+  Color,
+  colorToComponents,
+  createPDFAcroFields,
+  FieldAlreadyExistsError,
+  InvalidFieldNamePartError,
+  PDFAcroField,
+  PDFAcroForm,
+  PDFAcroNonTerminal,
+  PDFContext,
+  PDFForm,
+  PDFPage,
+  PDFRef,
+  PDFWidgetAnnotation,
+  rgb,
+  rotateRectangle,
+  setFillingColor,
+  toDegrees,
+} from 'pdf-lib';
+import { FieldAppearanceOptions } from 'pdf-lib/cjs/api/form/PDFField';
 
 export function Uint8ArrayToBuffer(data: Uint8Array): Buffer {
-  return ArrayBuffer.isView(data) ? Buffer.from(data.buffer, data.byteOffset, data.byteLength) : Buffer.from(data)
+  return ArrayBuffer.isView(data) ? Buffer.from(data.buffer, data.byteOffset, data.byteLength) : Buffer.from(data);
 }
 
 export function colorFromHex(hex: string): Color | undefined {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex);
-  return result ? rgb(
-    parseInt(result[1], 16) / 255.0,
-    parseInt(result[2], 16) / 255.0,
-    parseInt(result[3], 16) / 255.0
-  ) : undefined;
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex);
+  return result
+    ? rgb(parseInt(result[1], 16) / 255.0, parseInt(result[2], 16) / 255.0, parseInt(result[3], 16) / 255.0)
+    : undefined;
 }
 
 export function splitFieldName(fullyQualifiedName: string) {
@@ -35,12 +52,10 @@ export function splitFieldName(fullyQualifiedName: string) {
     nonTerminal: parts.slice(0, parts.length - 1),
     terminal: parts[parts.length - 1],
   };
-};
+}
 
 export function findOrCreateNonTerminals(form: PDFForm, partialNames: string[]) {
-  let nonTerminal: [PDFAcroForm] | [PDFAcroNonTerminal, PDFRef] = [
-    form.acroForm,
-  ];
+  let nonTerminal: [PDFAcroForm] | [PDFAcroNonTerminal, PDFRef] = [form.acroForm];
   for (let idx = 0, len = partialNames.length; idx < len; idx++) {
     const namePart = partialNames[idx];
     if (!namePart) throw new InvalidFieldNamePartError(namePart);
@@ -59,17 +74,14 @@ export function findOrCreateNonTerminals(form: PDFForm, partialNames: string[]) 
     }
   }
   return nonTerminal;
-};
+}
 
 export function findNonTerminal(
   form: PDFForm,
   partialName: string,
   parent: PDFAcroForm | PDFAcroNonTerminal,
 ): [PDFAcroNonTerminal, PDFRef] | undefined {
-  const fields =
-    parent instanceof PDFAcroForm
-      ? form.acroForm.getFields()
-      : createPDFAcroFields(parent.Kids());
+  const fields = parent instanceof PDFAcroForm ? form.acroForm.getFields() : createPDFAcroFields(parent.Kids());
 
   for (let idx = 0, len = fields.length; idx < len; idx++) {
     const [field, ref] = fields[idx];
@@ -79,7 +91,7 @@ export function findNonTerminal(
     }
   }
   return undefined;
-};
+}
 
 export function addFieldToParent(
   [parent, parentRef]: [PDFAcroForm] | [PDFAcroNonTerminal, PDFRef],
@@ -87,9 +99,7 @@ export function addFieldToParent(
   partialName: string,
 ) {
   const entries = parent.normalizedEntries();
-  const fields = createPDFAcroFields(
-    'Kids' in entries ? entries.Kids : entries.Fields,
-  );
+  const fields = createPDFAcroFields('Kids' in entries ? entries.Kids : entries.Fields);
   for (let idx = 0, len = fields.length; idx < len; idx++) {
     if (fields[idx][0].getPartialName() === partialName) {
       throw new FieldAlreadyExistsError(partialName);
@@ -97,9 +107,15 @@ export function addFieldToParent(
   }
   parent.addField(fieldRef);
   field.setParent(parentRef);
-};
+}
 
-export function createWidget(page: PDFPage, field: PDFAcroField, context: PDFContext, ref: PDFRef, options: FieldAppearanceOptions): PDFWidgetAnnotation {
+export function createWidget(
+  page: PDFPage,
+  field: PDFAcroField,
+  context: PDFContext,
+  ref: PDFRef,
+  options: FieldAppearanceOptions,
+): PDFWidgetAnnotation {
   const textColor = options.textColor;
   const backgroundColor = options.backgroundColor;
   const borderColor = options.borderColor;
@@ -116,11 +132,7 @@ export function createWidget(page: PDFPage, field: PDFAcroField, context: PDFCon
   const widget = PDFWidgetAnnotation.create(context, ref);
 
   // Set widget properties
-  const rect = rotateRectangle(
-    { x, y, width, height },
-    borderWidth,
-    degreesAngle,
-  );
+  const rect = rotateRectangle({ x, y, width, height }, borderWidth, degreesAngle);
   widget.setRectangle(rect);
 
   if (pageRef) widget.setP(pageRef);

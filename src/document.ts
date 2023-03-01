@@ -45,7 +45,7 @@ export class Document {
   }
 
   public destroy() {
-    for (let value of this.renderContextDict.values()) {
+    for (const value of this.renderContextDict.values()) {
       value.destroy()
     }
     this.renderContextDict.clear()
@@ -66,7 +66,7 @@ export class Document {
     if (refId) {
       refFileId = refId
     } else {
-      let md5 = new Md5()
+      const md5 = new Md5()
       if (typeof src === 'string') {
         md5.appendStr(src)
       } else {
@@ -78,7 +78,7 @@ export class Document {
     pages = pdfDoc.getPages().map((pdfPage: PDFPage, idx: number) => {
       const size = pdfPage.getSize()
       return {
-        refFileId: refFileId,
+        refFileId,
         refPageIndex: idx,
         elements: [],
         pageSize: size
@@ -108,7 +108,6 @@ export class Document {
 
   public generatePDFFile = async (options?: PDFFileGeneratorOption): Promise<Buffer> => {
     const iDoc = this.serialize()
-    console.log(iDoc)
     const generator = await PDFFileGenerator.create(iDoc, options)
     return await generator.generate()
   }
@@ -126,7 +125,7 @@ export class Document {
   }
 
   public addPage(page?: Page): Page {
-    let p = (page) ? page : new Page({
+    const p = (page) ? page : new Page({
       pageSize: this.defaultPageSize,
     })
     this.pages.push(p)
@@ -134,7 +133,7 @@ export class Document {
   }
 
   public insertPage(idx: number, page?: Page): Page {
-    let p = (page) ? page : new Page({
+    const p = (page) ? page : new Page({
       pageSize: this.defaultPageSize,
       font: this.defaultFont,
       fontSize: this.defaultFontSize,

@@ -99,36 +99,35 @@ export class Page {
 
   public setFieldValue(fieldName: string, value: any) {
     if (!this.elements || this.elements.length === 0) return
-    for (let i=0; i<this.elements.length; i++) {
-      const elem = this.elements[i]
-      if ((this.elements[i] as any).name === fieldName) {
-        switch (this.elements[i].elemType) {
+    for (const elem of this.elements) {
+      if ((elem as any).name === fieldName) {
+        switch (elem.elemType) {
           case ElementType.TextField:
-            (this.elements[i] as any).text = `${value}`
+            (elem as any).text = `${value}`
             break;
           case ElementType.DateInput:
-            (this.elements[i] as any).date = new Date(value)
+            (elem as any).date = new Date(value)
             break;
           case ElementType.RadioGroup:
-            (this.elements[i] as any).selectedOption = value
+            (elem as any).selectedOption = value
             break;
           case ElementType.CheckBox:
             if (typeof value === 'boolean') {
-              (this.elements[i] as any).checked = value
+              (elem as any).checked = value
             } else if (typeof value === 'string') {
-              (this.elements[i] as any).checked = (value.toLowerCase() === 'true' || value.toLowerCase() === 'yes')
+              (elem as any).checked = (value.toLowerCase() === 'true' || value.toLowerCase() === 'yes')
             } else if (typeof value === 'number') {
-              (this.elements[i] as any).checked = (value !== 0)
+              (elem as any).checked = (value !== 0)
             }
             break;
           case ElementType.OptionList:
           case ElementType.Dropdown:
             if (Array.isArray(value)) { 
-              (this.elements[i] as any).selectedOptions = value.map(v => `${v}`)
+              (elem as any).selectedOptions = value.map(v => `${v}`)
             } else if (typeof value === 'string') {
-              (this.elements[i] as any).selectedOptions = `${value}`.split(',').map(v => v.trim())
+              (elem as any).selectedOptions = `${value}`.split(',').map(v => v.trim())
             } else {
-              (this.elements[i] as any).selectedOptions = [`${value}`]
+              (elem as any).selectedOptions = [`${value}`]
             }
             break;
           default:

@@ -13,5 +13,8 @@ export * from './elements/fields/dateinput';
 export * from './elements/image';
 export * from './elements/text';
 export * from './elements/shape';
+export * from './errors/empty-image-source';
+export * from './errors/unsupport-font';
+export * from './errors/unsupport-mime-type';
 export * from './generator';
 export * from 'pdf-lib'

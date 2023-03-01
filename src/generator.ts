@@ -1,227 +1,247 @@
-import { createPDFAcroFields, degrees, PageSizes, PDFAcroPushButton, PDFAcroSignature, PDFArray, PDFButton, PDFDocument, PDFField, PDFFont, PDFImage, PDFPage, PDFPageDrawSVGOptions, PDFSignature, rgb, setFontAndSize, StandardFonts } from "pdf-lib";
+import {
+  degrees,
+  PageSizes,
+  PDFAcroSignature,
+  PDFDocument,
+  PDFField,
+  PDFFont,
+  PDFImage,
+  PDFPage,
+  PDFPageDrawSVGOptions,
+  PDFSignature,
+  rgb,
+  setFontAndSize,
+  StandardFonts,
+} from 'pdf-lib';
 import * as fontkit from '@pdf-lib/fontkit';
-import { IDocument } from "./document";
-import { Element, ElementType } from "./elements/element";
-import { Field } from "./elements/fields/field";
-import { CheckBox } from "./elements/fields/checkbox";
-import { addFieldToParent, colorFromHex, createWidget, findOrCreateNonTerminals, splitFieldName, Uint8ArrayToBuffer } from "./helper";
-import { Button } from "./elements/fields/button";
-import { Image } from "./elements/image";
-import { EmptyImageSource, UnsupportMimeType } from "./errors";
-import { RadioGroup } from "./elements/fields/radio";
-import { TextField } from "./elements/fields/textfield";
-import { Signature } from "./elements/fields/signature";
-import { FieldAppearanceOptions } from "pdf-lib/cjs/api/form/PDFField";
-import { Dropdown } from "./elements/fields/dropdown";
-import { OptionList } from "./elements/fields/optionlist";
-import { Text } from "./elements/text";
-import { Circle, Ellipse, Line, Rectangle, Square, SVGPath } from "./elements/shape";
-import { DateInput } from "./elements/fields/dateinput";
+import { IDocument } from './document';
+import { ElementType } from './elements/element';
+import { Field } from './elements/fields/field';
+import { CheckBox } from './elements/fields/checkbox';
+import {
+  addFieldToParent,
+  colorFromHex,
+  createWidget,
+  findOrCreateNonTerminals,
+  splitFieldName,
+  Uint8ArrayToBuffer,
+} from './helper';
+import { Button } from './elements/fields/button';
+import { Image } from './elements/image';
+import { UnsupportMimeType } from './errors/unsupport-mime-type';
+import { EmptyImageSource } from './errors/empty-image-source';
+import { RadioGroup } from './elements/fields/radio';
+import { TextField } from './elements/fields/textfield';
+import { Signature } from './elements/fields/signature';
+import { FieldAppearanceOptions } from 'pdf-lib/cjs/api/form/PDFField';
+import { Dropdown } from './elements/fields/dropdown';
+import { OptionList } from './elements/fields/optionlist';
+import { Text } from './elements/text';
+import { Circle, Ellipse, Line, DrawablePath, Square, SVGPath } from './elements/shape';
+import { DateInput } from './elements/fields/dateinput';
 import * as moment from 'moment-timezone';
 
 export interface PDFFileGeneratorOption {
   // mapping between custom font name and the font file path or binary of the font file
-  customFontMap?: Map<string, string | Uint8Array | ArrayBuffer>
+  customFontMap?: Map<string, string | Uint8Array | ArrayBuffer>;
 
   // Default font when the font does not exist
-  defaultFont?: StandardFonts
+  defaultFont?: StandardFonts;
 }
 
 export class PDFFileGenerator {
-  private doc: IDocument
-  private pdfDoc: PDFDocument
-  private fontDict: Map<string, PDFFont>
-  private imageDict: Map<string, PDFImage>
-  private options?: PDFFileGeneratorOption
+  private doc: IDocument;
+  private pdfDoc: PDFDocument;
+  private fontDict: Map<string, PDFFont>;
+  private imageDict: Map<string, PDFImage>;
+  private options?: PDFFileGeneratorOption;
 
   protected constructor(doc: IDocument, pdfDoc: PDFDocument, options?: PDFFileGeneratorOption) {
-    this.doc = doc
-    this.pdfDoc = pdfDoc
-    this.fontDict = new Map<string, PDFFont>()
-    this.imageDict = new Map<string, PDFImage>()
-    this.options = options
+    this.doc = doc;
+    this.pdfDoc = pdfDoc;
+    this.fontDict = new Map<string, PDFFont>();
+    this.imageDict = new Map<string, PDFImage>();
+    this.options = options;
   }
 
   public static async create(doc: IDocument, options?: PDFFileGeneratorOption): Promise<PDFFileGenerator> {
     // Create an empty PDF document
-    let pdfDoc = await PDFDocument.create()
+    const pdfDoc = await PDFDocument.create();
 
     // Register fontkit
     if (options?.customFontMap) {
-      pdfDoc.registerFontkit(fontkit)
+      pdfDoc.registerFontkit(fontkit);
     }
 
-    return new PDFFileGenerator(doc, pdfDoc, options)
+    return new PDFFileGenerator(doc, pdfDoc, options);
   }
 
   public generate = async (): Promise<Buffer> => {
     // Load all reference file
-    const fileRefDict = new Map<string, PDFDocument>()
-    for (let exf of this.doc.fileReferences) {
-      if (!exf.src) continue
-      const exfDoc = await PDFDocument.load(exf.src)
-      fileRefDict.set(exf.refId, exfDoc)
+    const fileRefDict = new Map<string, PDFDocument>();
+    for (const exf of this.doc.fileReferences) {
+      if (!exf.src) continue;
+      const exfDoc = await PDFDocument.load(exf.src);
+      fileRefDict.set(exf.refId, exfDoc);
     }
 
     // Process each page
-    let pageIndex = 0
-    for (let page of this.doc.pages) {
-      let pdfPage: PDFPage | undefined
+    let pageIndex = 0;
+    for (const page of this.doc.pages) {
+      let pdfPage: PDFPage | undefined;
       // If the page is a reference to the PDF file
       if (page.refFileId) {
         if (page.refPageIndex === undefined) {
-          throw new Error("reference page index is missing")
+          throw new Error('reference page index is missing');
         }
         if (page.refPageIndex < 0) {
-          throw new Error("reference page index must be greater or equal to zero")
+          throw new Error('reference page index must be greater or equal to zero');
         }
-        let refDoc = fileRefDict.get(page.refFileId)
+        const refDoc = fileRefDict.get(page.refFileId);
         if (!refDoc) {
-          throw new Error(`a file reference by the page ${pageIndex} is not found`)
+          throw new Error(`a file reference by the page ${pageIndex} is not found`);
         }
         try {
-          let copiedPages = await this.pdfDoc.copyPages(refDoc, [page.refPageIndex])
-          pdfPage = this.pdfDoc.addPage(copiedPages[0])
+          const copiedPages = await this.pdfDoc.copyPages(refDoc, [page.refPageIndex]);
+          pdfPage = this.pdfDoc.addPage(copiedPages[0]);
         } catch (err) {
-          console.log(err)
-          throw err
+          throw err;
         }
       } else if (page.pageSize) {
-        const { width, height } = page.pageSize
-        pdfPage = this.pdfDoc.addPage([width, height])
+        const { width, height } = page.pageSize;
+        pdfPage = this.pdfDoc.addPage([width, height]);
       } else if (this.doc.defaultPageSize) {
-        const { width, height } = this.doc.defaultPageSize
-        pdfPage = this.pdfDoc.addPage([width, height])
+        const { width, height } = this.doc.defaultPageSize;
+        pdfPage = this.pdfDoc.addPage([width, height]);
       } else {
-        pdfPage = this.pdfDoc.addPage(PageSizes.A4)
+        pdfPage = this.pdfDoc.addPage(PageSizes.A4);
       }
 
       // set the default style of the page
-      const font = await this.getFont(page.font ? page.font : StandardFonts.Helvetica)
-      pdfPage.setFont(font)
-      pdfPage.setFontSize(page.fontSize ? page.fontSize : 16)
-      pdfPage.setFontColor(page.textColor ? colorFromHex(page.textColor)! : rgb(0, 0, 0))
+      const font = await this.getFont(page.font ? page.font : StandardFonts.Helvetica);
+      pdfPage.setFont(font);
+      pdfPage.setFontSize(page.fontSize ? page.fontSize : 16);
+      pdfPage.setFontColor(page.textColor ? colorFromHex(page.textColor)! : rgb(0, 0, 0));
 
       // render elements if any
       if (page.elements) {
-        for (let elem of page.elements) {
-          await this.createPDFElement(pdfPage, elem)
+        for (const elem of page.elements) {
+          await this.createPDFElement(pdfPage, elem);
         }
       }
-      pageIndex++
+      pageIndex++;
     }
 
-    const data = await this.pdfDoc.save()
-    return Uint8ArrayToBuffer(data)
-  }
+    const data = await this.pdfDoc.save();
+    return Uint8ArrayToBuffer(data);
+  };
 
   protected async createPDFElement(page: PDFPage, elem: any): Promise<void> {
     switch (elem.elemType) {
       case ElementType.TextField:
-        return await this.addTextField(page, elem)
+        return await this.addTextField(page, elem);
       case ElementType.DateInput:
-        return await this.addDateInput(page, elem)
+        return await this.addDateInput(page, elem);
       case ElementType.CheckBox:
-        return await this.addCheckBox(page, elem)
+        return await this.addCheckBox(page, elem);
       case ElementType.Signature:
-        return await this.addSignature(page, elem)
+        return await this.addSignature(page, elem);
       case ElementType.RadioGroup:
-        return await this.addRadioGroup(page, elem)
+        return await this.addRadioGroup(page, elem);
       case ElementType.Dropdown:
-        return await this.addDropdown(page, elem)
+        return await this.addDropdown(page, elem);
       case ElementType.OptionList:
-        return await this.addOptionList(page, elem)
+        return await this.addOptionList(page, elem);
       case ElementType.Button:
-        return await this.addButton(page, elem)
+        return await this.addButton(page, elem);
       case ElementType.Image:
-        return await this.drawImage(page, elem)
+        return await this.drawImage(page, elem);
       case ElementType.Text:
-        return await this.drawText(page, elem)
+        return await this.drawText(page, elem);
       case ElementType.SVGPath:
-        return await this.drawSVGPath(page, elem)
+        return await this.drawSVGPath(page, elem);
       case ElementType.Line:
-        return await this.drawLine(page, elem)
+        return await this.drawLine(page, elem);
       case ElementType.Circle:
-        return await this.drawCircle(page, elem)
+        return await this.drawCircle(page, elem);
       case ElementType.Ellipse:
-        return await this.drawEllipse(page, elem)
+        return await this.drawEllipse(page, elem);
       case ElementType.Rectangle:
-        return await this.drawRectangle(page, elem)
+        return await this.drawRectangle(page, elem);
       case ElementType.Square:
-        return await this.drawSquare(page, elem)
+        return await this.drawSquare(page, elem);
     }
   }
 
   protected async getFont(fontName: string): Promise<PDFFont> {
-    let font = this.fontDict.get(fontName)
-    if (font) return font
+    let font = this.fontDict.get(fontName);
+    if (font) return font;
 
-    var stdFont: StandardFonts = (<any>StandardFonts)[fontName]
+    const stdFont = fontName as StandardFonts;//  (<any>StandardFonts)[fontName];
     if (stdFont) {
-      font = this.pdfDoc.embedStandardFont(stdFont)
+      font = this.pdfDoc.embedStandardFont(stdFont);
     } else if (this.options?.customFontMap) {
-      const fontByte = this.options.customFontMap.get(fontName)
+      const fontByte = this.options.customFontMap.get(fontName);
       if (fontByte) {
-        font = await this.pdfDoc.embedFont(fontByte)
+        font = await this.pdfDoc.embedFont(fontByte);
       }
     }
     if (!font) {
-      const defautlFont = (this.options?.defaultFont) ? this.options.defaultFont : StandardFonts.Helvetica
-      return await this.getFont(defautlFont)
+      const defautlFont = this.options?.defaultFont ? this.options.defaultFont : StandardFonts.Helvetica;
+      return await this.getFont(defautlFont);
     }
-    this.fontDict.set(fontName, font)
-    return font
+    this.fontDict.set(fontName, font);
+    return font;
   }
 
   protected async getImage(img: Image): Promise<PDFImage> {
     if (!img.src) {
-      throw new EmptyImageSource()
+      throw new EmptyImageSource();
     }
 
     switch (img.mimeType) {
       case 'image/jpg':
       case 'image/jpeg':
-        return await this.pdfDoc.embedJpg(img.src)
+        return await this.pdfDoc.embedJpg(img.src);
       case 'image/png':
-        return await this.pdfDoc.embedPng(img.src)
+        return await this.pdfDoc.embedPng(img.src);
       default:
-        throw new UnsupportMimeType(img.mimeType)
+        throw new UnsupportMimeType(img.mimeType);
     }
   }
 
   protected async updatePDFField(pdfField: PDFField, field: Field) {
     if (field.exported === true) {
-      pdfField.enableExporting()
+      pdfField.enableExporting();
     } else if (field.exported === false) {
-      pdfField.disableExporting()
+      pdfField.disableExporting();
     }
     if (field.readOnly === true) {
-      pdfField.enableReadOnly()
+      pdfField.enableReadOnly();
     } else if (field.readOnly === false) {
-      pdfField.disableReadOnly()
+      pdfField.disableReadOnly();
     }
     if (field.required === true) {
-      pdfField.enableRequired()
+      pdfField.enableRequired();
     } else if (field.required === false) {
-      pdfField.disableRequired()
+      pdfField.disableRequired();
     }
     // const pdfFont = await this.getFont(StandardFonts.Helvetica)
     // if (pdfFont) {
     //   pdfField.defaultUpdateAppearances(pdfFont)
     // }
-    const fontName = field.font ? field.font : StandardFonts.Helvetica
-    const fontSize = field.fontSize ? field.fontSize : 16
+    const fontName = field.font ? field.font : StandardFonts.Helvetica;
+    const fontSize = field.fontSize ? field.fontSize : 16;
     const da = pdfField.acroField.getDefaultAppearance() ?? '';
     const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
     pdfField.acroField.setDefaultAppearance(newDa);
-
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
-    const { x, y, width, height, rotate } = element
-    let pdfFont: PDFFont | undefined = undefined
+    const { x, y, width, height, rotate } = element;
+    let pdfFont: PDFFont | undefined;
     if (element.font) {
-      pdfFont = await this.getFont(element.font)
+      pdfFont = await this.getFont(element.font);
     }
     return {
       x,
@@ -229,257 +249,257 @@ export class PDFFileGenerator {
       width,
       height,
       rotate: degrees(rotate),
-      textColor: (element.textColor) ? colorFromHex(element.textColor) : undefined,
-      backgroundColor: (element.backgroundColor) ? colorFromHex(element.backgroundColor) : undefined,
-      borderColor: (element.borderColor) ? colorFromHex(element.borderColor) : undefined,
+      textColor: element.textColor ? colorFromHex(element.textColor) : undefined,
+      backgroundColor: element.backgroundColor ? colorFromHex(element.backgroundColor) : undefined,
+      borderColor: element.borderColor ? colorFromHex(element.borderColor) : undefined,
       borderWidth: element.borderWidth,
       hidden: element.hidden,
       font: pdfFont,
-    }
+    };
   }
 
   protected async addButton(page: PDFPage, button: Button): Promise<void> {
-    const form = page.doc.getForm()
-    const field = form.createButton(button.name)
-    await this.updatePDFField(field, button)
+    const form = page.doc.getForm();
+    const field = form.createButton(button.name);
+    await this.updatePDFField(field, button);
 
     if (button.fontSize) {
       // field.setFontSize(button.fontSize)
     }
     if (button.image) {
-      const pdfImg = await this.getImage(button.image)
+      const pdfImg = await this.getImage(button.image);
       if (pdfImg) {
-        field.setImage(pdfImg, button.imageAlignment)
+        field.setImage(pdfImg, button.imageAlignment);
       }
     }
-    const options = await this.createFieldAppearanceOptions(button)
-    field.addToPage(button.text, page, options)
+    const options = await this.createFieldAppearanceOptions(button);
+    field.addToPage(button.text, page, options);
   }
 
   protected async addCheckBox(page: PDFPage, checkBox: CheckBox): Promise<void> {
-    const form = page.doc.getForm()
-    const field = form.createCheckBox(checkBox.name)
-    await this.updatePDFField(field, checkBox)
+    const form = page.doc.getForm();
+    const field = form.createCheckBox(checkBox.name);
+    await this.updatePDFField(field, checkBox);
 
     if (checkBox.checked === true) {
-      field.check()
+      field.check();
     } else if (checkBox.checked === false) {
-      field.uncheck()
+      field.uncheck();
     }
-    const options = await this.createFieldAppearanceOptions(checkBox)
-    field.addToPage(page, options)
+    const options = await this.createFieldAppearanceOptions(checkBox);
+    field.addToPage(page, options);
   }
 
   protected async addDropdown(page: PDFPage, dropdown: Dropdown): Promise<void> {
-    const form = page.doc.getForm()
-    const field = form.createDropdown(dropdown.name)
-    await this.updatePDFField(field, dropdown)
+    const form = page.doc.getForm();
+    const field = form.createDropdown(dropdown.name);
+    await this.updatePDFField(field, dropdown);
 
     if (dropdown.options) {
-      field.setOptions(dropdown.options)
+      field.setOptions(dropdown.options);
     }
     if (dropdown.editable === true) {
-      field.enableEditing()
+      field.enableEditing();
     } else if (dropdown.editable === false) {
-      field.disableEditing()
+      field.disableEditing();
     }
     if (dropdown.multiselect === true) {
-      field.enableMultiselect()
+      field.enableMultiselect();
     } else if (dropdown.multiselect === false) {
-      field.disableMultiselect()
+      field.disableMultiselect();
     }
     if (dropdown.selectOnClick === true) {
-      field.enableSelectOnClick()
+      field.enableSelectOnClick();
     } else if (dropdown.selectOnClick === false) {
-      field.disableSelectOnClick()
+      field.disableSelectOnClick();
     }
     if (dropdown.sorted === true) {
-      field.enableSorting()
+      field.enableSorting();
     } else if (dropdown.sorted === false) {
-      field.disableSorting()
+      field.disableSorting();
     }
     if (dropdown.spellChecked === true) {
-      field.enableSpellChecking()
+      field.enableSpellChecking();
     } else if (dropdown.spellChecked === false) {
-      field.disableSpellChecking()
+      field.disableSpellChecking();
     }
     if (dropdown.selectedOptions) {
-      field.select(dropdown.selectedOptions, false)
+      field.select(dropdown.selectedOptions, false);
     }
     if (dropdown.fontSize) {
       // field.setFontSize(dropdown.fontSize)
     }
-    const options = await this.createFieldAppearanceOptions(dropdown)
-    field.addToPage(page, options)
+    const options = await this.createFieldAppearanceOptions(dropdown);
+    field.addToPage(page, options);
   }
 
   protected async addOptionList(page: PDFPage, optionList: OptionList): Promise<void> {
-    const form = page.doc.getForm()
-    const field = form.createOptionList(optionList.name)
-    await this.updatePDFField(field, optionList)
+    const form = page.doc.getForm();
+    const field = form.createOptionList(optionList.name);
+    await this.updatePDFField(field, optionList);
 
     if (optionList.options) {
-      field.setOptions(optionList.options)
+      field.setOptions(optionList.options);
     }
     if (optionList.multiselect === true) {
-      field.enableMultiselect()
+      field.enableMultiselect();
     } else if (optionList.multiselect === false) {
-      field.disableMultiselect()
+      field.disableMultiselect();
     }
     if (optionList.selectOnClick === true) {
-      field.enableSelectOnClick()
+      field.enableSelectOnClick();
     } else if (optionList.selectOnClick === false) {
-      field.disableSelectOnClick()
+      field.disableSelectOnClick();
     }
     if (optionList.sorted === true) {
-      field.enableSorting()
+      field.enableSorting();
     } else if (optionList.sorted === false) {
-      field.disableSorting()
+      field.disableSorting();
     }
     if (optionList.selectedOptions) {
-      field.select(optionList.selectedOptions, false)
+      field.select(optionList.selectedOptions, false);
     }
     if (optionList.fontSize) {
       // field.setFontSize(optionList.fontSize)
     }
-    const options = await this.createFieldAppearanceOptions(optionList)
-    field.addToPage(page, options)
+    const options = await this.createFieldAppearanceOptions(optionList);
+    field.addToPage(page, options);
   }
 
   protected async addRadioGroup(page: PDFPage, radioGroup: RadioGroup): Promise<void> {
-    const form = page.doc.getForm()
-    const field = form.createRadioGroup(radioGroup.name)
-    this.updatePDFField(field, radioGroup)
+    const form = page.doc.getForm();
+    const field = form.createRadioGroup(radioGroup.name);
+    this.updatePDFField(field, radioGroup);
 
     if (radioGroup.options) {
       for (const radioOption of radioGroup.options) {
-        const options = await this.createFieldAppearanceOptions(radioOption)
-        field.addOptionToPage(radioOption.option, page, options)
+        const options = await this.createFieldAppearanceOptions(radioOption);
+        field.addOptionToPage(radioOption.option, page, options);
       }
     }
     if (radioGroup.selectedOption) {
-      field.select(radioGroup.selectedOption)
+      field.select(radioGroup.selectedOption);
     }
   }
 
   protected async addDateInput(page: PDFPage, dateInput: DateInput): Promise<void> {
-    const form = page.doc.getForm()
-    const field = form.createTextField(dateInput.name)
-    this.updatePDFField(field, dateInput)
+    const form = page.doc.getForm();
+    const field = form.createTextField(dateInput.name);
+    this.updatePDFField(field, dateInput);
 
     if (dateInput.combing === true) {
-      field.enableCombing()
+      field.enableCombing();
     } else if (dateInput.combing === false) {
-      field.disableCombing()
+      field.disableCombing();
     }
-    
+
     if (dateInput.multiline === true) {
-      field.enableMultiline()
+      field.enableMultiline();
     } else if (dateInput.multiline === false) {
-      field.disableMultiline()
+      field.disableMultiline();
     }
-    
+
     if (dateInput.scrolling === true) {
-      field.enableScrolling()
+      field.enableScrolling();
     } else if (dateInput.scrolling === false) {
-      field.disableScrolling()
+      field.disableScrolling();
     }
-    
+
     if (dateInput.maxLength) {
-      field.setMaxLength(dateInput.maxLength)
+      field.setMaxLength(dateInput.maxLength);
     }
     if (dateInput.alignment) {
-      field.setAlignment(dateInput.alignment)
+      field.setAlignment(dateInput.alignment);
     }
     if (dateInput.fontSize) {
       try {
-        field.setFontSize(dateInput.fontSize)
+        field.setFontSize(dateInput.fontSize);
       } catch (error) {
-        console.log(error)
+        // console.log(error);
       }
     }
 
-    field.disableFileSelection()
-    field.disablePassword()
-    field.disableRichFormatting()
-    field.disableSpellChecking()
+    field.disableFileSelection();
+    field.disablePassword();
+    field.disableRichFormatting();
+    field.disableSpellChecking();
 
     if (dateInput.date) {
-      const formatter = dateInput.format ?? "YYYY/MM/DD HH:mm:ss"
+      const formatter = dateInput.format ?? 'YYYY/MM/DD HH:mm:ss';
       if (dateInput.timezone) {
-        const text = moment(dateInput.date).tz(dateInput.timezone).format(formatter)
-        field.setText(text)  
+        const text = moment(dateInput.date).tz(dateInput.timezone).format(formatter);
+        field.setText(text);
       } else {
-        const text = moment(dateInput.date).utc().format(formatter)
-        field.setText(text)  
+        const text = moment(dateInput.date).utc().format(formatter);
+        field.setText(text);
       }
     }
-    const options = await this.createFieldAppearanceOptions(dateInput)
-    field.addToPage(page, options)
+    const options = await this.createFieldAppearanceOptions(dateInput);
+    field.addToPage(page, options);
   }
 
   protected async addTextField(page: PDFPage, textField: TextField): Promise<void> {
-    const form = page.doc.getForm()
-    const field = form.createTextField(textField.name)
-    this.updatePDFField(field, textField)
+    const form = page.doc.getForm();
+    const field = form.createTextField(textField.name);
+    this.updatePDFField(field, textField);
 
     if (textField.combing === true) {
-      field.enableCombing()
+      field.enableCombing();
     } else if (textField.combing === false) {
-      field.disableCombing()
+      field.disableCombing();
     }
     if (textField.fileSelection === true) {
-      field.enableFileSelection()
+      field.enableFileSelection();
     } else if (textField.fileSelection === false) {
-      field.disableFileSelection()
+      field.disableFileSelection();
     }
     if (textField.multiline === true) {
-      field.enableMultiline()
+      field.enableMultiline();
     } else if (textField.multiline === false) {
-      field.disableMultiline()
+      field.disableMultiline();
     }
     if (textField.password === true) {
-      field.enablePassword()
+      field.enablePassword();
     } else if (textField.password === false) {
-      field.disablePassword()
+      field.disablePassword();
     }
     if (textField.richFormatting === true) {
-      field.enableRichFormatting()
+      field.enableRichFormatting();
     } else if (textField.richFormatting === false) {
-      field.disableRichFormatting()
+      field.disableRichFormatting();
     }
     if (textField.scrolling === true) {
-      field.enableScrolling()
+      field.enableScrolling();
     } else if (textField.scrolling === false) {
-      field.disableScrolling()
+      field.disableScrolling();
     }
     if (textField.spellChecking === true) {
-      field.enableSpellChecking()
+      field.enableSpellChecking();
     } else if (textField.spellChecking === false) {
-      field.disableSpellChecking()
+      field.disableSpellChecking();
     }
     if (textField.maxLength) {
-      field.setMaxLength(textField.maxLength)
+      field.setMaxLength(textField.maxLength);
     }
     if (textField.alignment) {
-      field.setAlignment(textField.alignment)
+      field.setAlignment(textField.alignment);
     }
     if (textField.fontSize) {
       try {
-        field.setFontSize(textField.fontSize)
+        field.setFontSize(textField.fontSize);
       } catch (error) {
-        console.log(error)
+        // console.log(error);
       }
     }
     if (textField.text) {
-      field.setText(textField.text)
+      field.setText(textField.text);
     }
-    const options = await this.createFieldAppearanceOptions(textField)
-    field.addToPage(page, options)
+    const options = await this.createFieldAppearanceOptions(textField);
+    field.addToPage(page, options);
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
-    const form = page.doc.getForm()
+    const form = page.doc.getForm();
     const nameParts = splitFieldName(signature.name);
     const parent = findOrCreateNonTerminals(form, nameParts.nonTerminal);
     const dict = form.doc.context.obj({
@@ -487,14 +507,14 @@ export class PDFFileGenerator {
       Kids: [],
     });
     const ref = form.doc.context.register(dict);
-    form.acroForm.addField(ref)
-    const sig = PDFAcroSignature.fromDict(dict, ref)
+    form.acroForm.addField(ref);
+    const sig = PDFAcroSignature.fromDict(dict, ref);
     sig.setPartialName(nameParts.terminal);
     addFieldToParent(parent, [sig, sig.ref], nameParts.terminal);
     const field = PDFSignature.of(sig, sig.ref, form.doc);
-    this.updatePDFField(field, signature)
-    const options = await this.createFieldAppearanceOptions(signature)
-    const widget = createWidget(page, sig, form.doc.context, ref, options)
+    this.updatePDFField(field, signature);
+    const options = await this.createFieldAppearanceOptions(signature);
+    const widget = createWidget(page, sig, form.doc.context, ref, options);
     const widgetRef = form.doc.context.register(widget.dict);
 
     // Add widget to this field
@@ -507,7 +527,7 @@ export class PDFFileGenerator {
     // Add widget to the given page
     page.node.addAnnot(widgetRef);
 
-    // As the PDF-LIB does not allow to create the PDFSignature field, 
+    // As the PDF-LIB does not allow to create the PDFSignature field,
     // therefore, we use the PDFTextField instead
     // const form = page.doc.getForm()
     // const field = form.createTextField(signature.name)
@@ -517,8 +537,8 @@ export class PDFFileGenerator {
   }
 
   protected async drawImage(page: PDFPage, img: Image): Promise<void> {
-    const pdfImg = await this.getImage(img)
-    const { x, y, width, height, rotate, xSkew, ySkew, opacity, blendMode } = img
+    const pdfImg = await this.getImage(img);
+    const { x, y, width, height, rotate, xSkew, ySkew, opacity, blendMode } = img;
     if (pdfImg) {
       page.drawImage(pdfImg, {
         x,
@@ -528,17 +548,32 @@ export class PDFFileGenerator {
         rotate: rotate ? degrees(rotate) : undefined,
         xSkew: xSkew ? degrees(xSkew) : undefined,
         ySkew: ySkew ? degrees(ySkew) : undefined,
-        opacity: opacity,
-        blendMode: blendMode,
-      })
+        opacity,
+        blendMode,
+      });
     }
   }
 
   protected async drawText(page: PDFPage, text: Text): Promise<void> {
-    const { value, color, font, size, wordBreaks, x, y, maxWidth, lineHeight, rotate, xSkew, ySkew, opacity, blendMode } = text
-    let pdfFont: PDFFont | undefined = undefined
+    const {
+      value,
+      color,
+      font,
+      size,
+      wordBreaks,
+      x,
+      y,
+      maxWidth,
+      lineHeight,
+      rotate,
+      xSkew,
+      ySkew,
+      opacity,
+      blendMode,
+    } = text;
+    let pdfFont: PDFFont | undefined;
     if (font) {
-      pdfFont = await this.getFont(font)
+      pdfFont = await this.getFont(font);
     }
     page.drawText(value, {
       font: pdfFont,
@@ -554,7 +589,7 @@ export class PDFFileGenerator {
       opacity,
       blendMode,
       wordBreaks,
-    })
+    });
   }
 
   protected async drawCircle(page: PDFPage, circle: Circle): Promise<void> {
@@ -571,7 +606,7 @@ export class PDFFileGenerator {
       size,
       x,
       y,
-    } = circle
+    } = circle;
     page.drawCircle({
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
@@ -585,7 +620,7 @@ export class PDFFileGenerator {
       size,
       x,
       y,
-    })
+    });
   }
 
   protected async drawEllipse(page: PDFPage, ellipse: Ellipse): Promise<void> {
@@ -604,7 +639,7 @@ export class PDFFileGenerator {
       xScale,
       y,
       yScale,
-    } = ellipse
+    } = ellipse;
     page.drawEllipse({
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
@@ -620,21 +655,11 @@ export class PDFFileGenerator {
       xScale,
       y,
       yScale,
-    })
-  } 
+    });
+  }
 
   protected async drawLine(page: PDFPage, line: Line): Promise<void> {
-    const {
-      blendMode,
-      color,
-      dashArray,
-      dashPhase,
-      end,
-      lineCap,
-      opacity,
-      start,
-      thickness,
-    } = line
+    const { blendMode, color, dashArray, dashPhase, end, lineCap, opacity, start, thickness } = line;
     page.drawLine({
       blendMode,
       color: color ? colorFromHex(color) : undefined,
@@ -645,10 +670,10 @@ export class PDFFileGenerator {
       opacity,
       start,
       thickness,
-    })
+    });
   }
 
-  protected async drawRectangle(page: PDFPage, rectangle: Rectangle): Promise<void> {
+  protected async drawRectangle(page: PDFPage, rectangle: DrawablePath): Promise<void> {
     const {
       blendMode,
       borderColor,
@@ -666,7 +691,7 @@ export class PDFFileGenerator {
       xSkew,
       y,
       ySkew,
-    } = rectangle
+    } = rectangle;
     page.drawRectangle({
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
@@ -684,7 +709,7 @@ export class PDFFileGenerator {
       xSkew: xSkew ? degrees(xSkew) : undefined,
       y,
       ySkew: ySkew ? degrees(ySkew) : undefined,
-    })
+    });
   }
 
   protected async drawSquare(page: PDFPage, square: Square): Promise<void> {
@@ -704,7 +729,7 @@ export class PDFFileGenerator {
       xSkew,
       y,
       ySkew,
-    } = square
+    } = square;
     page.drawSquare({
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
@@ -721,20 +746,19 @@ export class PDFFileGenerator {
       xSkew: xSkew ? degrees(xSkew) : undefined,
       y,
       ySkew: ySkew ? degrees(ySkew) : undefined,
-    })
+    });
   }
 
   protected async drawSVGPath(page: PDFPage, svgPath: SVGPath): Promise<void> {
-    if (!svgPath.points || svgPath.points.length === 0) return
+    if (!svgPath.points || svgPath.points.length === 0) return;
     const svg = svgPath.points.reduce((prev, pt, idx): string => {
-      if(idx === 0) {
-        return `M ${pt.x},${pt.y}`
+      if (idx === 0) {
+        return `M ${pt.x},${pt.y}`;
       } else {
-        return prev + ` L ${pt.x},${pt.y}`
+        return prev + ` L ${pt.x},${pt.y}`;
       }
-    }, '')
-    svgPath.borderColor
-    const { 
+    }, '');
+    const {
       blendMode,
       borderColor,
       borderDashArray,
@@ -747,8 +771,8 @@ export class PDFFileGenerator {
       rotate,
       scale,
       x,
-      y, 
-    } = svgPath
+      y,
+    } = svgPath;
     const options = {
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
@@ -759,12 +783,12 @@ export class PDFFileGenerator {
       borderWidth,
       color: color ? colorFromHex(color) : undefined,
       opacity,
-      rotate: (rotate && !isNaN(rotate)) ? degrees(rotate) : undefined,
+      rotate: rotate && !isNaN(rotate) ? degrees(rotate) : undefined,
       scale,
-      x: (x && !isNaN(x)) ? x : undefined,
-      y: (y && !isNaN(y))? y : undefined, 
-    } as PDFPageDrawSVGOptions
-    page.moveTo(0, page.getHeight())
-    page.drawSvgPath(svg, options)
+      x: x && !isNaN(x) ? x : undefined,
+      y: y && !isNaN(y) ? y : undefined,
+    } as PDFPageDrawSVGOptions;
+    page.moveTo(0, page.getHeight());
+    page.drawSvgPath(svg, options);
   }
 }
