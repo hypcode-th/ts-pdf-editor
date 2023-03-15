@@ -531,6 +531,15 @@ export class PDFFileGenerator {
     // therefore, we use the PDFTextField instead
     const form = page.doc.getForm()
     const field = form.createTextField(signature.name)
+
+    // Create anchorString for the docusign, we use senderId as the anchorString
+    // Set the text field color to be the same as the background so signer cannot see it.
+    if (signature.signerId) {
+      signature.textColor = signature.backgroundColor
+      signature.fontSize = 6
+      field.setText(signature.signerId) // => as anchorString when send to docusign
+    }
+
     this.updatePDFField(field, signature)
     const options = await this.createFieldAppearanceOptions(signature)
     field.addToPage(page, options)
