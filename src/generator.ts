@@ -522,8 +522,8 @@ export class PDFFileGenerator {
     sig.addWidget(widgetRef);
 
     // Set appearance streams for widget
-    // const font = options.font ?? form.getDefaultFont();
-    // updateSignatureWidgetAppearance(field, widget, font);
+    const fieldFont = options.font ?? form.getDefaultFont();
+    updateSignatureWidgetAppearance(field, widget, fieldFont);
     
     // Add widget to the given page
     page.node.addAnnot(widgetRef);

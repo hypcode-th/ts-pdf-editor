@@ -273,7 +273,7 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
   const borderColor = componentsToColor(ap?.getBorderColor());
   const normalBackgroundColor = componentsToColor(ap?.getBackgroundColor());
 
-  let textLines: PDFHexString[];
+  let textLines: TextPosition[];
   let fontSize: number;
 
   const bounds = {
@@ -282,13 +282,13 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
     width: width - (borderWidth) * 2,
     height: height - (borderWidth) * 2,
   };
-  const layout = layoutSinglelineText(text, {
+  const layout = layoutSinglelineText('', {
     alignment: TextAlignment.Center,
     fontSize: widgetFontSize ?? fieldFontSize,
     font,
     bounds,
   });
-  textLines = [layout.line.encoded];
+  textLines = [layout.line];
   fontSize = layout.fontSize;
 
   // Update font size and color
@@ -396,7 +396,7 @@ export const drawSignature = (options: {
   borderWidth: number | PDFNumber;
   color: Color | undefined;
   borderColor: Color | undefined;
-  textLines: PDFHexString[];
+  textLines: { encoded: PDFHexString; x: number; y: number }[];
   textColor: Color;
   font: string | PDFName;
   fontSize: number | PDFNumber;
@@ -437,10 +437,28 @@ export const drawSignature = (options: {
     ySkew: degrees(0),
   });
 
+  const lines = drawTextLines(options.textLines, {
+    color: options.textColor,
+    font: options.font,
+    size: options.fontSize,
+    rotate: degrees(0),
+    xSkew: degrees(0),
+    ySkew: degrees(0),
+  });
+
+  const markedContent = [
+    beginMarkedContent('Sig'),
+    pushGraphicsState(),
+    ...lines,
+    popGraphicsState(),
+    endMarkedContent(),
+  ];
+
   return [
     pushGraphicsState(),
     ...background,
     ...clippingArea,
+    ...markedContent,
     popGraphicsState(),
-  ] as PDFOperator[];
+  ]  as PDFOperator[];
 };
