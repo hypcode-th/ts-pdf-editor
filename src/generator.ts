@@ -562,13 +562,20 @@ export class PDFFileGenerator {
     if (font) {
       pdfFont = await this.getFont(font);
     }
+
+    const h = height ?? 0
+    const w = width ?? 0
     const value = signature.signerId ?? signature.name ?? ''
+    const fz = fontSize ?? 6
+    const lh = pdfFont?.heightAtSize(fz) ?? 0
+    const tw = pdfFont?.widthOfTextAtSize(value, fz) ?? 0
+    
     page.drawText(value, {
       font: pdfFont,
-      x,
-      y: y ? y + 2 : undefined,
+      x: x ? x + ((w - tw) * 0.5) : undefined,
+      y: y ? y + ((h - lh) * 0.5) : undefined,
       maxWidth: width,
-      lineHeight: height,
+      lineHeight: (lh > 0) ? lh : height,
       size: fontSize ?? 6,
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
       rotate: rotate ? degrees(rotate) : undefined,
