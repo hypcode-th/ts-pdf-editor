@@ -513,33 +513,33 @@ export class PDFFileGenerator {
       height
     } = signature;
 
-    const form = page.doc.getForm();
-    const nameParts = splitFieldName(signature.name);
-    const parent = findOrCreateNonTerminals(form, nameParts.nonTerminal);
-    const dict = form.doc.context.obj({
-      FT: 'Sig',
-      Kids: [],
-    });
-    const ref = form.doc.context.register(dict);
-    form.acroForm.addField(ref);
-    const sig = PDFAcroSignature.fromDict(dict, ref);
-    sig.setPartialName(nameParts.terminal);
-    addFieldToParent(parent, [sig, sig.ref], nameParts.terminal);
-    const field = PDFSignature.of(sig, sig.ref, form.doc);
-    this.updatePDFField(field, signature);
-    const options = await this.createFieldAppearanceOptions(signature);
-    const widget = createWidget(page, sig, form.doc.context, ref, options);
-    const widgetRef = form.doc.context.register(widget.dict);
+    // const form = page.doc.getForm();
+    // const nameParts = splitFieldName(signature.name);
+    // const parent = findOrCreateNonTerminals(form, nameParts.nonTerminal);
+    // const dict = form.doc.context.obj({
+    //   FT: 'Sig',
+    //   Kids: [],
+    // });
+    // const ref = form.doc.context.register(dict);
+    // form.acroForm.addField(ref);
+    // const sig = PDFAcroSignature.fromDict(dict, ref);
+    // sig.setPartialName(nameParts.terminal);
+    // addFieldToParent(parent, [sig, sig.ref], nameParts.terminal);
+    // const field = PDFSignature.of(sig, sig.ref, form.doc);
+    // this.updatePDFField(field, signature);
+    // const options = await this.createFieldAppearanceOptions(signature);
+    // const widget = createWidget(page, sig, form.doc.context, ref, options);
+    // const widgetRef = form.doc.context.register(widget.dict);
 
     // Add widget to this field
-    sig.addWidget(widgetRef);
+    // sig.addWidget(widgetRef);
 
     // Set appearance streams for widget
     // const fieldFont = options.font ?? form.getDefaultFont();
     // updateSignatureWidgetAppearance(field, widget, fieldFont);
     
     // Add widget to the given page
-    page.node.addAnnot(widgetRef);
+    // page.node.addAnnot(widgetRef);
 
     // To use with DocuSign SignHere tabs,
     // we will create draw a signature name as text on the widget
@@ -566,7 +566,7 @@ export class PDFFileGenerator {
     page.drawText(value, {
       font: pdfFont,
       x,
-      y,
+      y: y ? y + 2 : undefined,
       maxWidth: width,
       lineHeight: height,
       size: fontSize ?? 6,
