@@ -305,12 +305,8 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
     width: width - borderWidth,
     height: height - borderWidth,
     borderWidth: borderWidth ?? 0,
-    borderColor,
-    textColor,
-    font: font.name,
-    fontSize,
     color: normalBackgroundColor,
-    textLines,
+    borderColor,
     padding: 0,
   };
 
@@ -396,10 +392,6 @@ export const drawSignature = (options: {
   borderWidth: number | PDFNumber;
   color: Color | undefined;
   borderColor: Color | undefined;
-  textLines: PDFHexString[];
-  textColor: Color;
-  font: string | PDFName;
-  fontSize: number | PDFNumber;
   padding: number | PDFNumber;
 }) => {
   const x = asNumber(options.x);
@@ -437,32 +429,10 @@ export const drawSignature = (options: {
     ySkew: degrees(0),
   });
 
-  const lines = drawLinesOfText(options.textLines, {
-    lineHeight: options.fontSize,
-    color: options.textColor,
-    font: options.font,
-    size: options.fontSize,
-    rotate: degrees(0),
-    xSkew: degrees(0),
-    ySkew: degrees(0),
-    x,
-    y,
-  } as DrawLinesOfTextOptions);
-
-  const markedContent = [
-    // beginMarkedContent('Tx'),
-    beginMarkedContent('Sig'),
-    pushGraphicsState(),
-    ...lines,
-    popGraphicsState(),
-    endMarkedContent(),
-  ];
-
   return [
     pushGraphicsState(),
     ...background,
     ...clippingArea,
-    ...markedContent,
     popGraphicsState(),
   ] as PDFOperator[];
 };
