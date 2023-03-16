@@ -539,7 +539,7 @@ export class PDFFileGenerator {
       width: signature.width,
       height: signature.height,
       rotate: signature.rotate,
-      value: signature.signerId,
+      value: signature.signerId ?? signature.name,
       color: signature.backgroundColor,
       font: signature.font,
       size: signature.fontSize ?? 6,
