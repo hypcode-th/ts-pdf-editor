@@ -500,6 +500,19 @@ export class PDFFileGenerator {
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
+    const {
+      backgroundColor,
+      borderColor,
+      borderWidth,
+      font,
+      fontSize,
+      x,
+      y,
+      rotate,
+      width,
+      height
+    } = signature;
+
     const form = page.doc.getForm();
     const nameParts = splitFieldName(signature.name);
     const parent = findOrCreateNonTerminals(form, nameParts.nonTerminal);
@@ -522,8 +535,8 @@ export class PDFFileGenerator {
     sig.addWidget(widgetRef);
 
     // Set appearance streams for widget
-    const fieldFont = options.font ?? form.getDefaultFont();
-    updateSignatureWidgetAppearance(field, widget, fieldFont);
+    // const fieldFont = options.font ?? form.getDefaultFont();
+    // updateSignatureWidgetAppearance(field, widget, fieldFont);
     
     // Add widget to the given page
     page.node.addAnnot(widgetRef);
@@ -533,16 +546,18 @@ export class PDFFileGenerator {
     // usign the same color as the background color of the signature
     // to hide the text but the DocuSign still can map the SignHere tab
     // to it (by anchorString is the name of the signature)
-    const {
-      backgroundColor,
-      font,
-      fontSize,
+
+    page.drawRectangle({
       x,
       y,
-      rotate,
       width,
-      height
-    } = signature;
+      height,
+      rotate: rotate ? degrees(rotate) : undefined,
+      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+      borderWidth,
+      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+    });
+    
     let pdfFont: PDFFont | undefined;
     if (font) {
       pdfFont = await this.getFont(font);

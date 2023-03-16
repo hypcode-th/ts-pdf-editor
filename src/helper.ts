@@ -54,9 +54,6 @@ import {
   pushGraphicsState,
   popGraphicsState,
   endMarkedContent,
-  drawLinesOfText,
-  DrawTextOptions,
-  DrawLinesOfTextOptions,
 } from 'pdf-lib';
 
 import { FieldAppearanceOptions } from 'pdf-lib/cjs/api/form/PDFField';
@@ -314,7 +311,7 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
     padding: 0,
   };
 
-  return [...rotate, ...drawSignature(options)];
+  return [...rotate, ...drawTextField(options)];
 };
 
 export function updateSignatureWidgetAppearance(
