@@ -25,6 +25,7 @@ import {
   findOrCreateNonTerminals,
   splitFieldName,
   Uint8ArrayToBuffer,
+  updateSignatureWidgetAppearance,
 } from './helper';
 import { Button } from './elements/fields/button';
 import { Image } from './elements/image';
@@ -499,51 +500,45 @@ export class PDFFileGenerator {
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
-    // const form = page.doc.getForm();
-    // const nameParts = splitFieldName(signature.name);
-    // const parent = findOrCreateNonTerminals(form, nameParts.nonTerminal);
-    // const dict = form.doc.context.obj({
-    //   FT: 'Sig',
-    //   Kids: [],
-    // });
-    // const ref = form.doc.context.register(dict);
-    // form.acroForm.addField(ref);
-    // const sig = PDFAcroSignature.fromDict(dict, ref);
-    // sig.setPartialName(nameParts.terminal);
-    // addFieldToParent(parent, [sig, sig.ref], nameParts.terminal);
-    // const field = PDFSignature.of(sig, sig.ref, form.doc);
-    // this.updatePDFField(field, signature);
-    // const options = await this.createFieldAppearanceOptions(signature);
-    // const widget = createWidget(page, sig, form.doc.context, ref, options);
-    // const widgetRef = form.doc.context.register(widget.dict);
+    const form = page.doc.getForm();
+    const nameParts = splitFieldName(signature.name);
+    const parent = findOrCreateNonTerminals(form, nameParts.nonTerminal);
+    const dict = form.doc.context.obj({
+      FT: 'Sig',
+      Kids: [],
+    });
+    const ref = form.doc.context.register(dict);
+    form.acroForm.addField(ref);
+    const sig = PDFAcroSignature.fromDict(dict, ref);
+    sig.setPartialName(nameParts.terminal);
+    addFieldToParent(parent, [sig, sig.ref], nameParts.terminal);
+    const field = PDFSignature.of(sig, sig.ref, form.doc);
+    this.updatePDFField(field, signature);
+    const options = await this.createFieldAppearanceOptions(signature);
+    const widget = createWidget(page, sig, form.doc.context, ref, options);
+    const widgetRef = form.doc.context.register(widget.dict);
 
     // Add widget to this field
-    // sig.addWidget(widgetRef);
+    sig.addWidget(widgetRef);
 
     // Set appearance streams for widget
-    // const font = options.font ?? form.getDefaultFont();
-    // updateWidgetAppearance(field, widget, font);
-
+    const font = options.font ?? form.getDefaultFont();
+    updateSignatureWidgetAppearance(field, widget, font);
+    
+    
     // Add widget to the given page
-    // page.node.addAnnot(widgetRef);
+    page.node.addAnnot(widgetRef);
 
     // As the PDF-LIB does not allow to create the PDFSignature field,
     // therefore, we use the PDFTextField instead
-    const form = page.doc.getForm()
-    const field = form.createTextField(signature.name)
-
-    // Create anchorString for the docusign, we use senderId as the anchorString
-    // Set the text field color to be the same as the background so signer cannot see it.
-    if (signature.signerId) {
-      signature.textColor = signature.backgroundColor
-      signature.fontSize = 6
-      field.setText(signature.signerId) // => as anchorString when send to docusign
-    }
-
-    this.updatePDFField(field, signature)
-    const options = await this.createFieldAppearanceOptions(signature)
-    field.addToPage(page, options)
+    // const form = page.doc.getForm()
+    // const field = form.createTextField(signature.name)
+    // this.updatePDFField(field, signature)
+    // const options = await this.createFieldAppearanceOptions(signature)
+    // field.addToPage(page, options)
   }
+
+  
 
   protected async drawImage(page: PDFPage, img: Image): Promise<void> {
     const pdfImg = await this.getImage(img);
