@@ -39,6 +39,24 @@ import {
   AppearanceMapping,
   PDFOperator,
   PDFDict,
+  PDFNumber,
+  PDFHexString,
+  PDFName,
+  asNumber,
+  lineTo,
+  closePath,
+  clip,
+  endPath,
+  drawRectangle,
+  degrees,
+  drawTextLines,
+  beginMarkedContent,
+  pushGraphicsState,
+  popGraphicsState,
+  endMarkedContent,
+  drawLinesOfText,
+  DrawTextOptions,
+  DrawLinesOfTextOptions,
 } from 'pdf-lib';
 
 import { FieldAppearanceOptions } from 'pdf-lib/cjs/api/form/PDFField';
@@ -255,7 +273,7 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
   const borderColor = componentsToColor(ap?.getBorderColor());
   const normalBackgroundColor = componentsToColor(ap?.getBackgroundColor());
 
-  let textLines: TextPosition[];
+  let textLines: PDFHexString[];
   let fontSize: number;
 
   const bounds = {
@@ -270,7 +288,7 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
     font,
     bounds,
   });
-  textLines = [layout.line];
+  textLines = [layout.line.encoded];
   fontSize = layout.fontSize;
 
   // Update font size and color
@@ -296,7 +314,7 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
     padding: 0,
   };
 
-  return [...rotate, ...drawTextField(options)];
+  return [...rotate, ...drawSignature(options)];
 };
 
 export function updateSignatureWidgetAppearance(
@@ -368,3 +386,83 @@ function updateWidgetAppearances(
     widget.removeDownAppearance();
   }
 }
+
+
+export const drawSignature = (options: {
+  x: number | PDFNumber;
+  y: number | PDFNumber;
+  width: number | PDFNumber;
+  height: number | PDFNumber;
+  borderWidth: number | PDFNumber;
+  color: Color | undefined;
+  borderColor: Color | undefined;
+  textLines: PDFHexString[];
+  textColor: Color;
+  font: string | PDFName;
+  fontSize: number | PDFNumber;
+  padding: number | PDFNumber;
+}) => {
+  const x = asNumber(options.x);
+  const y = asNumber(options.y);
+  const width = asNumber(options.width);
+  const height = asNumber(options.height);
+  const borderWidth = asNumber(options.borderWidth);
+  const padding = asNumber(options.padding);
+
+  const clipX = x + borderWidth / 2 + padding;
+  const clipY = y + borderWidth / 2 + padding;
+  const clipWidth = width - (borderWidth / 2 + padding) * 2;
+  const clipHeight = height - (borderWidth / 2 + padding) * 2;
+
+  const clippingArea = [
+    moveTo(clipX, clipY),
+    lineTo(clipX, clipY + clipHeight),
+    lineTo(clipX + clipWidth, clipY + clipHeight),
+    lineTo(clipX + clipWidth, clipY),
+    closePath(),
+    clip(),
+    endPath(),
+  ];
+
+  const background = drawRectangle({
+    x,
+    y,
+    width,
+    height,
+    borderWidth: options.borderWidth,
+    color: options.color,
+    borderColor: options.borderColor,
+    rotate: degrees(0),
+    xSkew: degrees(0),
+    ySkew: degrees(0),
+  });
+
+  const lines = drawLinesOfText(options.textLines, {
+    lineHeight: options.fontSize,
+    color: options.textColor,
+    font: options.font,
+    size: options.fontSize,
+    rotate: degrees(0),
+    xSkew: degrees(0),
+    ySkew: degrees(0),
+    x,
+    y,
+  } as DrawLinesOfTextOptions);
+
+  const markedContent = [
+    // beginMarkedContent('Tx'),
+    beginMarkedContent('Sig'),
+    pushGraphicsState(),
+    ...lines,
+    popGraphicsState(),
+    endMarkedContent(),
+  ];
+
+  return [
+    pushGraphicsState(),
+    ...background,
+    ...clippingArea,
+    ...markedContent,
+    popGraphicsState(),
+  ] as PDFOperator[];
+};
