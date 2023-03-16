@@ -522,8 +522,8 @@ export class PDFFileGenerator {
     sig.addWidget(widgetRef);
 
     // Set appearance streams for widget
-    const font = options.font ?? form.getDefaultFont();
-    updateSignatureWidgetAppearance(field, widget, font);
+    // const font = options.font ?? form.getDefaultFont();
+    // updateSignatureWidgetAppearance(field, widget, font);
     
     // Add widget to the given page
     page.node.addAnnot(widgetRef);
@@ -533,19 +533,31 @@ export class PDFFileGenerator {
     // usign the same color as the background color of the signature
     // to hide the text but the DocuSign still can map the SignHere tab
     // to it (by anchorString is the name of the signature)
-    this.drawText(page, {
-      x: signature.x,
-      y: signature.y,
-      width: signature.width,
-      height: signature.height,
-      rotate: signature.rotate,
-      value: signature.signerId ?? signature.name,
-      color: signature.backgroundColor,
-      font: signature.font,
-      size: signature.fontSize ?? 6,
-      lineHeight: signature.fontSize ?? 8,
-      maxWidth: signature.width,
-    } as Text) 
+    const {
+      backgroundColor,
+      font,
+      fontSize,
+      x,
+      y,
+      rotate,
+      width,
+      height
+    } = signature;
+    let pdfFont: PDFFont | undefined;
+    if (font) {
+      pdfFont = await this.getFont(font);
+    }
+    const value = signature.signerId ?? signature.name ?? ''
+    page.drawText(value, {
+      font: pdfFont,
+      x,
+      y,
+      maxWidth: width,
+      lineHeight: height,
+      size: fontSize ?? 6,
+      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+      rotate: rotate ? degrees(rotate) : undefined,
+    });
 
     // As the PDF-LIB does not allow to create the PDFSignature field,
     // therefore, we use the PDFTextField instead

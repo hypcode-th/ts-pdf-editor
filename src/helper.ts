@@ -305,8 +305,12 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
     width: width - borderWidth,
     height: height - borderWidth,
     borderWidth: borderWidth ?? 0,
-    color: normalBackgroundColor,
     borderColor,
+    textColor,
+    font: font.name,
+    fontSize,
+    color: normalBackgroundColor,
+    textLines,
     padding: 0,
   };
 
@@ -392,6 +396,10 @@ export const drawSignature = (options: {
   borderWidth: number | PDFNumber;
   color: Color | undefined;
   borderColor: Color | undefined;
+  textLines: PDFHexString[];
+  textColor: Color;
+  font: string | PDFName;
+  fontSize: number | PDFNumber;
   padding: number | PDFNumber;
 }) => {
   const x = asNumber(options.x);
