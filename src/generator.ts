@@ -564,16 +564,14 @@ export class PDFFileGenerator {
     }
 
     const h = height ?? 0
-    const w = width ?? 0
     const value = signature.signerId ?? signature.name ?? ''
     const fz = fontSize ?? 6
     const lh = pdfFont?.heightAtSize(fz) ?? 0
-    const tw = pdfFont?.widthOfTextAtSize(value, fz) ?? 0
     
     page.drawText(value, {
       font: pdfFont,
-      x: x ? x + ((w - tw) * 0.5) : undefined,
-      y: y ? y + ((h - lh) * 0.5) : undefined,
+      x: x ? x : undefined,
+      y: y ? y + h - lh  : undefined,
       maxWidth: width,
       lineHeight: (lh > 0) ? lh : height,
       size: fontSize ?? 6,
