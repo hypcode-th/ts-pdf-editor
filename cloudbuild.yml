@@ -3,13 +3,15 @@ steps:
     args:
       - '-c'
       - >
-        echo "$$NPMRC" > /root/.npmrc
+        echo "//registry.npmjs.org/:_authToken=$$NPM_ACCESS_TOKEN" >> /root/.npmrc
+
+        echo "@hypcode-th:registry=https://registry.npmjs.org/" >> /root/.npmrc
 
         chmod 400 /root/.npmrc
 
     id: Prepare .npmrc
     secretEnv:
-      - NPMRC
+      - NPM_ACCESS_TOKEN
     volumes:
       - name: home
         path: /root/
@@ -35,5 +37,5 @@ steps:
         path: /root/
 availableSecrets:
   secretManager:
-    - versionName: projects/455829342814/secrets/npmrc-hypcode-th/versions/latest
-      env: NPMRC
+    - versionName: projects/455829342814/secrets/npm-granular-access-token-hypcode-th/versions/latest
+      env: NPM_ACCESS_TOKEN
