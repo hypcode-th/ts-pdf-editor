@@ -1,5 +1,5 @@
 steps:
-  - name: gcr.io/cloud-builders/bash
+  - name: bash
     args:
       - '-c'
       - >
@@ -18,6 +18,12 @@ steps:
       - install
     entrypoint: npm
     id: Install required packages
+  - name: gcr.io/cloud-builders/node
+    args:
+      - run
+      - build
+    entrypoint: npm
+    id: Build package
   - name: gcr.io/cloud-builders/node
     args:
       - publish
