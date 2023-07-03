@@ -1,0 +1,16 @@
+steps:
+  - name: gcr.io/cloud-builders/yarn
+    args:
+      - '-c'
+      - echo "$$NPMRC" > /root/.npmrc
+      - chmod 400 /root/.npmrc
+      - yarn install
+      - yarn publish --access public
+    entrypoint: bash
+    secretEnv:
+      - NPMRC
+    id: Publish npm package
+availableSecrets:
+  secretManager:
+    - versionName: projects/455829342814/secrets/npmrc-hypcode-th/versions/latest
+      env: NPMRC
