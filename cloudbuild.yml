@@ -1,31 +1,21 @@
 steps:
-  - name: bash
-    args:
-      - '-c'
-      - >
-        echo "$$YARNRC" > /root/.yarnrc.yml
-
-        chmod 400 /root/.yarnrc.yml
-    id: Prepare .yarnrc.yml
-    entrypoint: bash
-    secretEnv:
-      - YARNRC
-    volumes:
-      - name: yarnrc
-        path: /root/.yarnrc.yml
   - name: gcr.io/cloud-builders/yarn
     args:
       - install
     id: Install required packages
   - name: gcr.io/cloud-builders/yarn
     args:
-      - publish
-      - --access
-      - public
+      - '-c'
+      - >
+        echo "$$YARNRC" > /root/.yarnrc.yml
+
+        chmod 400 /root/.yarnrc.yml
+
+        yarn publish --access public
     id: Publish package
-    volumes:
-      - name: yarnrc
-        path: /root/.yarnrc.yml
+    entrypoint: bash
+    secretEnv:
+      - YARNRC
 availableSecrets:
   secretManager:
     - versionName: projects/455829342814/secrets/yarnrc-yml-npm-hypcode-th/versions/latest
