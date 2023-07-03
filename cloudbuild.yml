@@ -1,9 +1,10 @@
 steps:
-  - name: gcr.io/cloud-builders/yarn
+  - name: bash
     args:
       - '-c'
       - >
         echo "$$NPMRC" > /root/.npmrc
+        
         chmod 400 /root/.npmrc
     id: Prepare NPM publisher credentails
     entrypoint: bash
