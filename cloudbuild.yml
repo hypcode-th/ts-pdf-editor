@@ -3,16 +3,16 @@ steps:
     args:
       - '-c'
       - >
-        echo "$$NPMRC" > /root/.npmrc
-        
-        chmod 400 /root/.npmrc
-    id: Prepare NPM publisher credentails
+        echo "$$YARNRC" > /root/.yarnrc.yml
+
+        chmod 400 /root/.yarnrc.yml
+    id: Prepare .yarnrc.yml
     entrypoint: bash
     secretEnv:
-      - NPMRC
+      - YARNRC
     volumes:
-      - name: npmrc
-        path: /root/.npmrc
+      - name: yarnrc
+        path: /root/.yarnrc.yml
   - name: gcr.io/cloud-builders/yarn
     args:
       - install
@@ -22,11 +22,11 @@ steps:
       - publish
       - --access
       - public
-    id: Publish npm package
+    id: Publish package
     volumes:
-      - name: npmrc
-        path: /root/.npmrc
+      - name: yarnrc
+        path: /root/.yarnrc.yml
 availableSecrets:
   secretManager:
-    - versionName: projects/455829342814/secrets/npmrc-hypcode-th/versions/latest
-      env: NPMRC
+    - versionName: projects/455829342814/secrets/yarnrc-yml-npm-hypcode-th/versions/latest
+      env: YARNRC
