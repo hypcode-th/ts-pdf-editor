@@ -2,14 +2,29 @@ steps:
   - name: gcr.io/cloud-builders/yarn
     args:
       - '-c'
-      - echo "$$NPMRC" > /root/.npmrc
-      - chmod 400 /root/.npmrc
-      - yarn install
-      - yarn publish --access public
+      - >
+        echo "$$NPMRC" > /root/.npmrc
+        chmod 400 /root/.npmrc
+    id: Prepare NPM publisher credentails
     entrypoint: bash
     secretEnv:
       - NPMRC
+    volumes:
+      - name: npmrc
+        path: /root/.npmrc
+  - name: gcr.io/cloud-builders/yarn
+    args:
+      - install
+    id: Install required packages
+  - name: gcr.io/cloud-builders/yarn
+    args:
+      - publish
+      - --access
+      - public
     id: Publish npm package
+    volumes:
+      - name: npmrc
+        path: /root/.npmrc
 availableSecrets:
   secretManager:
     - versionName: projects/455829342814/secrets/npmrc-hypcode-th/versions/latest
