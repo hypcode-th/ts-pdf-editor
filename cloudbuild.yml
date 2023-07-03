@@ -11,29 +11,28 @@ steps:
     secretEnv:
       - NPMRC
     volumes:
-      - name: npmrc
-        path: /root/.npmrc
-  - name: node
+      - name: home
+        path: /root/
+  - name: 'gcr.io/cloud-builders/npm'
     args:
       - install
-    entrypoint: npm
     id: Install required packages
-  - name: node
+  - name: 'gcr.io/cloud-builders/npm'
     args:
       - run
       - build
-    entrypoint: npm
     id: Build package
-  - name: node
+  - name: 'gcr.io/cloud-builders/npm'
     args:
       - publish
       - --access
       - public
-    entrypoint: npm
     id: Publish npm package
+    env:
+      - HOME=/root/
     volumes:
-      - name: npmrc
-        path: /root/.npmrc
+      - name: home
+        path: /root/
 availableSecrets:
   secretManager:
     - versionName: projects/455829342814/secrets/npmrc-hypcode-th/versions/latest
