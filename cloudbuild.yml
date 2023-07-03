@@ -13,18 +13,18 @@ steps:
     volumes:
       - name: npmrc
         path: /root/.npmrc
-  - name: gcr.io/cloud-builders/node
+  - name: node
     args:
       - install
     entrypoint: npm
     id: Install required packages
-  - name: gcr.io/cloud-builders/node
+  - name: node
     args:
       - run
       - build
     entrypoint: npm
     id: Build package
-  - name: gcr.io/cloud-builders/node
+  - name: node
     args:
       - publish
       - --access
