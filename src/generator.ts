@@ -184,11 +184,7 @@ export class PDFFileGenerator {
     } else if (this.options?.customFontMap) {
       const fontByte = this.options.customFontMap.get(fontName);
       if (fontByte) {
-        try {
-          font = await this.pdfDoc.embedFont(fontByte);
-        } catch (err: any) {
-          console.log(`fail to embed font ${fontName} to the document with error ${err.message}`)
-        }
+        font = await this.pdfDoc.embedFont(fontByte);
       }
     }
     if (!font) {

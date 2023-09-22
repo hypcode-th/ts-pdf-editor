@@ -186,7 +186,7 @@ export class Document {
     }
 
     this.fileReferences[idx2].refId = newRefId
-    for(let page of this.pages) {
+    for(const page of this.pages) {
       if (page.getRefFileId() === oldRefId) {
         page.setRefFileId(newRefId)
       }
