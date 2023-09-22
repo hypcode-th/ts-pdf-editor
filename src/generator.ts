@@ -238,10 +238,11 @@ export class PDFFileGenerator {
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
       pdfField.defaultUpdateAppearances(pdfFont);
-      // const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
-      // form.updateFieldAppearances = function () {
-      //   return rawUpdateFieldAppearances(pdfFont);
-      // };
+      
+      const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
+      form.updateFieldAppearances = function () {
+        return rawUpdateFieldAppearances(pdfFont);
+      };
     }
     const da = pdfField.acroField.getDefaultAppearance() ?? '';
     const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
