@@ -420,7 +420,7 @@ export class PDFFileGenerator {
     const fontName = dateInput.font ? dateInput.font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      // field.defaultUpdateAppearances(pdfFont)
+      field.defaultUpdateAppearances(pdfFont)
       field.updateAppearances(pdfFont);
     }
 
@@ -481,7 +481,7 @@ export class PDFFileGenerator {
     const fontName = textField.font ? textField.font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      // field.defaultUpdateAppearances(pdfFont)
+      field.defaultUpdateAppearances(pdfFont)
       field.updateAppearances(pdfFont);
     }
 
