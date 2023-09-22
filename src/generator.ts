@@ -4,6 +4,7 @@ import {
   PDFDocument,
   PDFField,
   PDFFont,
+  PDFForm,
   PDFImage,
   PDFPage,
   PDFPageDrawSVGOptions,
@@ -215,7 +216,7 @@ export class PDFFileGenerator {
     }
   }
 
-  protected async updatePDFField(pdfField: PDFField, field: Field) {
+  protected async updatePDFField(form: PDFForm, pdfField: PDFField, field: Field) {
     if (field.exported === true) {
       pdfField.enableExporting();
     } else if (field.exported === false) {
@@ -232,18 +233,18 @@ export class PDFFileGenerator {
       pdfField.disableRequired();
     }
 
-    // const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
-    // form.updateFieldAppearances = function () {
-    //   return rawUpdateFieldAppearances(pdfFont);
-    // };
-    
     const fontName = field.font ? field.font : StandardFonts.Helvetica
+    const fontSize = field.fontSize ? field.fontSize : 16
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
       pdfField.defaultUpdateAppearances(pdfFont);
+      // const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
+      // form.updateFieldAppearances = function () {
+      //   return rawUpdateFieldAppearances(pdfFont);
+      // };
     }
     const da = pdfField.acroField.getDefaultAppearance() ?? '';
-    const newDa = da + '\n' + setFontAndSize(StandardFonts.Helvetica, 16).toString();
+    const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
     pdfField.acroField.setDefaultAppearance(newDa);
   }
 
@@ -271,7 +272,7 @@ export class PDFFileGenerator {
   protected async addButton(page: PDFPage, button: Button): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createButton(button.name);
-    await this.updatePDFField(field, button);
+    await this.updatePDFField(form, field, button);
 
     // Set font
     const fontName = button.font ? button.font : StandardFonts.Helvetica;
@@ -298,7 +299,7 @@ export class PDFFileGenerator {
   protected async addCheckBox(page: PDFPage, checkBox: CheckBox): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createCheckBox(checkBox.name);
-    await this.updatePDFField(field, checkBox);
+    await this.updatePDFField(form, field, checkBox);
 
     if (checkBox.checked === true) {
       field.check();
@@ -312,7 +313,7 @@ export class PDFFileGenerator {
   protected async addDropdown(page: PDFPage, dropdown: Dropdown): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createDropdown(dropdown.name);
-    await this.updatePDFField(field, dropdown);
+    await this.updatePDFField(form, field, dropdown);
 
     // Set font
     const fontName = dropdown.font ? dropdown.font : StandardFonts.Helvetica;
@@ -364,7 +365,7 @@ export class PDFFileGenerator {
   protected async addOptionList(page: PDFPage, optionList: OptionList): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createOptionList(optionList.name);
-    await this.updatePDFField(field, optionList);
+    await this.updatePDFField(form, field, optionList);
 
     // Set font
     const fontName = optionList.font ? optionList.font : StandardFonts.Helvetica;
@@ -406,7 +407,7 @@ export class PDFFileGenerator {
   protected async addRadioGroup(page: PDFPage, radioGroup: RadioGroup): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createRadioGroup(radioGroup.name);
-    this.updatePDFField(field, radioGroup);
+    this.updatePDFField(form, field, radioGroup);
 
     if (radioGroup.options) {
       for (const radioOption of radioGroup.options) {
@@ -422,7 +423,7 @@ export class PDFFileGenerator {
   protected async addDateInput(page: PDFPage, dateInput: DateInput): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createTextField(dateInput.name);
-    this.updatePDFField(field, dateInput);
+    this.updatePDFField(form, field, dateInput);
 
     // Set font
     const fontName = dateInput.font ? dateInput.font : StandardFonts.Helvetica;
@@ -483,7 +484,7 @@ export class PDFFileGenerator {
   protected async addTextField(page: PDFPage, textField: TextField): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createTextField(textField.name);
-    this.updatePDFField(field, textField);
+    this.updatePDFField(form, field, textField);
 
     // Set font
     const fontName = textField.font ? textField.font : StandardFonts.Helvetica;
