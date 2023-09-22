@@ -1,5 +1,6 @@
 import {
   degrees,
+  isStandardFont,
   PageSizes,
   PDFAcroSignature,
   PDFDocument,
@@ -177,10 +178,9 @@ export class PDFFileGenerator {
   protected async getFont(fontName: string): Promise<PDFFont> {
     let font = this.fontDict.get(fontName);
     if (font) return font;
-
-    const stdFont = fontName as StandardFonts;//  (<any>StandardFonts)[fontName];
-    if (stdFont) {
-      font = this.pdfDoc.embedStandardFont(stdFont);
+    
+    if (Object.values(StandardFonts).includes(fontName as StandardFonts)) {
+      font = this.pdfDoc.embedStandardFont(fontName as StandardFonts);
     } else if (this.options?.customFontMap) {
       const fontByte = this.options.customFontMap.get(fontName);
       if (fontByte) {
