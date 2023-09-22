@@ -184,7 +184,11 @@ export class PDFFileGenerator {
     } else if (this.options?.customFontMap) {
       const fontByte = this.options.customFontMap.get(fontName);
       if (fontByte) {
-        font = await this.pdfDoc.embedFont(fontByte);
+        try {
+          font = await this.pdfDoc.embedFont(fontByte);
+        } catch (err: any) {
+          console.log(`fail to embed font ${fontName} to the document with error ${err.message}`)
+        }
       }
     }
     if (!font) {
@@ -227,15 +231,25 @@ export class PDFFileGenerator {
     } else if (field.required === false) {
       pdfField.disableRequired();
     }
+    if (typeof (field as any).setFontSize === 'function') {
+      const fontSize = field.fontSize ? field.fontSize : 16;
+      (field as any).setFontSize(fontSize)
+    }
+    if (typeof (field as any).updateAppearances === 'function') {
+      const fontName = field.font ? field.font : StandardFonts.Helvetica;
+      const pdfFont = await this.getFont(fontName)
+      if (pdfFont) {
+        (field as any).updateAppearances(pdfFont)
+      }
+    }
+
     // const pdfFont = await this.getFont(StandardFonts.Helvetica)
     // if (pdfFont) {
     //   pdfField.defaultUpdateAppearances(pdfFont)
     // }
-    const fontName = field.font ? field.font : StandardFonts.Helvetica;
-    const fontSize = field.fontSize ? field.fontSize : 16;
-    const da = pdfField.acroField.getDefaultAppearance() ?? '';
-    const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
-    pdfField.acroField.setDefaultAppearance(newDa);
+    // const da = pdfField.acroField.getDefaultAppearance() ?? '';
+    // const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
+    // pdfField.acroField.setDefaultAppearance(newDa);
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
@@ -256,14 +270,13 @@ export class PDFFileGenerator {
       borderWidth: element.borderWidth,
       hidden: element.hidden,
       font: pdfFont,
-    };
+    } as FieldAppearanceOptions;
   }
 
   protected async addButton(page: PDFPage, button: Button): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createButton(button.name);
     await this.updatePDFField(field, button);
-
     if (button.fontSize) {
       // field.setFontSize(button.fontSize)
     }

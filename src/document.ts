@@ -116,6 +116,10 @@ export class Document {
     return this.pages
   }
 
+  public setPages(pages: Page[]) {
+    this.pages = [...pages]
+  }
+
   public getPage(idx: number): Page {
     return this.pages[idx]
   }
@@ -160,6 +164,33 @@ export class Document {
 
   public getFileReferences(): PDFFileReference[] {
     return this.fileReferences
+  }
+
+  public addFileReference(v: PDFFileReference) {
+    this.fileReferences.push(v)
+  }
+
+  public changeFileReferenceId(oldRefId: string, newRefId: string) {
+    if (oldRefId === newRefId) return
+    const idx1 = this.fileReferences.findIndex((v: PDFFileReference) => { 
+      return (v.refId === newRefId)
+    })
+    if (idx1 >= 0) {
+      throw new Error('The Ref Id is already in used')
+    }
+    const idx2 = this.fileReferences.findIndex((v: PDFFileReference) => { 
+      return (v.refId === oldRefId)
+    })
+    if (idx2 < 0) {
+      return
+    }
+
+    this.fileReferences[idx2].refId = newRefId
+    for(let page of this.pages) {
+      if (page.getRefFileId() === oldRefId) {
+        page.setRefFileId(newRefId)
+      }
+    }
   }
 
   protected async getRenderingContext(refFileId: string): Promise<PDFRenderingContext | undefined> {

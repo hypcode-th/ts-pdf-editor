@@ -79,6 +79,10 @@ export class Page {
     return this.refFileId
   }
 
+  public setRefFileId(refId: string | undefined) {
+    this.refFileId = refId;
+  }
+
   public getRefPageIndex(): number | undefined {
     return this.refPageIndex
   }
