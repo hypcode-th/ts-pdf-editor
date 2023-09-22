@@ -1,17 +1,13 @@
 import {
   degrees,
-  isStandardFont,
   PageSizes,
-  PDFAcroSignature,
   PDFDocument,
   PDFField,
   PDFFont,
   PDFImage,
   PDFPage,
   PDFPageDrawSVGOptions,
-  PDFSignature,
   rgb,
-  setFontAndSize,
   StandardFonts,
 } from 'pdf-lib';
 import * as fontkit from '@pdf-lib/fontkit';
@@ -20,13 +16,8 @@ import { ElementType } from './elements/element';
 import { Field } from './elements/fields/field';
 import { CheckBox } from './elements/fields/checkbox';
 import {
-  addFieldToParent,
   colorFromHex,
-  createWidget,
-  findOrCreateNonTerminals,
-  splitFieldName,
   Uint8ArrayToBuffer,
-  updateSignatureWidgetAppearance,
 } from './helper';
 import { Button } from './elements/fields/button';
 import { Image } from './elements/image';
