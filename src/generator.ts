@@ -238,9 +238,8 @@ export class PDFFileGenerator {
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
       pdfField.defaultUpdateAppearances(pdfFont);
-      
       const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
-      form.updateFieldAppearances = function () {
+      form.updateFieldAppearances = () => {
         return rawUpdateFieldAppearances(pdfFont);
       };
     }
