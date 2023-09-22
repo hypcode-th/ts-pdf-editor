@@ -40,19 +40,19 @@ export interface PDFFileGeneratorOption {
   defaultFont?: StandardFonts;
 }
 
-export function filterCharSet (v: string, font: PDFFont) {
-  const charSet = font.getCharacterSet()
+export function filterCharSet(v: string, font: PDFFont) {
+  const charSet = font.getCharacterSet();
   for (let i = 0; i < v.length; i++) {
-    const cp  = v.codePointAt(i)
+    const cp = v.codePointAt(i);
     if (cp) {
       if (v[i] && !charSet.includes(cp)) {
         v = v.substring(0, i) + '?' + v.substring(i + 1);
       }
     }
   }
-  v = v.replace(/[\uE000-\uF8FF]/g, '?')
+  v = v.replace(/[\uE000-\uF8FF]/g, '?');
   // v = v.replace(/[^\w\s!?{}()-;:"'*@#$%&+=]/g, '?')
-  return v
+  return v;
 }
 
 export class PDFFileGenerator {
@@ -231,9 +231,16 @@ export class PDFFileGenerator {
     } else if (field.required === false) {
       pdfField.disableRequired();
     }
-    const pdfFont = await this.getFont(StandardFonts.Helvetica)
+
+    // const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
+    // form.updateFieldAppearances = function () {
+    //   return rawUpdateFieldAppearances(pdfFont);
+    // };
+    
+    const fontName = field.font ? field.font : StandardFonts.Helvetica
+    const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      pdfField.defaultUpdateAppearances(pdfFont)
+      pdfField.defaultUpdateAppearances(pdfFont);
     }
     const da = pdfField.acroField.getDefaultAppearance() ?? '';
     const newDa = da + '\n' + setFontAndSize(StandardFonts.Helvetica, 16).toString();
@@ -588,7 +595,7 @@ export class PDFFileGenerator {
 
     const fontName = font ? font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
-    
+
     const h = height ?? 0;
     const value = signature.signerId ?? signature.name ?? '';
     const fz = fontSize ?? 6;
