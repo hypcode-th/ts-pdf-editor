@@ -8,6 +8,7 @@ import {
   PDFPage,
   PDFPageDrawSVGOptions,
   rgb,
+  setFontAndSize,
   StandardFonts,
 } from 'pdf-lib';
 import * as fontkit from '@pdf-lib/fontkit';
@@ -230,13 +231,13 @@ export class PDFFileGenerator {
     } else if (field.required === false) {
       pdfField.disableRequired();
     }
-    // const pdfFont = await this.getFont(StandardFonts.Helvetica)
-    // if (pdfFont) {
-    //   pdfField.defaultUpdateAppearances(pdfFont)
-    // }
-    // const da = pdfField.acroField.getDefaultAppearance() ?? '';
-    // const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
-    // pdfField.acroField.setDefaultAppearance(newDa);
+    const pdfFont = await this.getFont(StandardFonts.Helvetica)
+    if (pdfFont) {
+      pdfField.defaultUpdateAppearances(pdfFont)
+    }
+    const da = pdfField.acroField.getDefaultAppearance() ?? '';
+    const newDa = da + '\n' + setFontAndSize(StandardFonts.Helvetica, 16).toString();
+    pdfField.acroField.setDefaultAppearance(newDa);
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
@@ -269,7 +270,7 @@ export class PDFFileGenerator {
     const fontName = button.font ? button.font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
+      // field.defaultUpdateAppearances(pdfFont)
       field.updateAppearances(pdfFont);
     }
 
@@ -310,7 +311,7 @@ export class PDFFileGenerator {
     const fontName = dropdown.font ? dropdown.font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
+      // field.defaultUpdateAppearances(pdfFont)
       field.updateAppearances(pdfFont);
     }
 
@@ -362,7 +363,7 @@ export class PDFFileGenerator {
     const fontName = optionList.font ? optionList.font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
+      // field.defaultUpdateAppearances(pdfFont)
       field.updateAppearances(pdfFont);
     }
 
@@ -420,7 +421,7 @@ export class PDFFileGenerator {
     const fontName = dateInput.font ? dateInput.font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
+      // field.defaultUpdateAppearances(pdfFont)
       field.updateAppearances(pdfFont);
     }
 
@@ -481,7 +482,7 @@ export class PDFFileGenerator {
     const fontName = textField.font ? textField.font : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      field.defaultUpdateAppearances(pdfFont)
+      // field.defaultUpdateAppearances(pdfFont)
       field.updateAppearances(pdfFont);
     }
 
