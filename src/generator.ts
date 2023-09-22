@@ -15,10 +15,7 @@ import { IDocument } from './document';
 import { ElementType } from './elements/element';
 import { Field } from './elements/fields/field';
 import { CheckBox } from './elements/fields/checkbox';
-import {
-  colorFromHex,
-  Uint8ArrayToBuffer,
-} from './helper';
+import { colorFromHex, Uint8ArrayToBuffer } from './helper';
 import { Button } from './elements/fields/button';
 import { Image } from './elements/image';
 import { UnsupportMimeType } from './errors/unsupport-mime-type';
@@ -40,6 +37,21 @@ export interface PDFFileGeneratorOption {
 
   // Default font when the font does not exist
   defaultFont?: StandardFonts;
+}
+
+export function filterCharSet (v: string, font: PDFFont) {
+  const charSet = font.getCharacterSet()
+  for (let i = 0; i < v.length; i++) {
+    const cp  = v.codePointAt(i)
+    if (cp) {
+      if (v[i] && !charSet.includes(cp)) {
+        v = v.substring(0, i) + '?' + v.substring(i + 1);
+      }
+    }
+  }
+  v = v.replace(/[\uE000-\uF8FF]/g, '?')
+  // v = v.replace(/[^\w\s!?{}()-;:"'*@#$%&+=]/g, '?')
+  return v
 }
 
 export class PDFFileGenerator {
@@ -169,7 +181,7 @@ export class PDFFileGenerator {
   protected async getFont(fontName: string): Promise<PDFFont> {
     let font = this.fontDict.get(fontName);
     if (font) return font;
-    
+
     if (Object.values(StandardFonts).includes(fontName as StandardFonts)) {
       font = this.pdfDoc.embedStandardFont(fontName as StandardFonts);
     } else if (this.options?.customFontMap) {
@@ -218,18 +230,6 @@ export class PDFFileGenerator {
     } else if (field.required === false) {
       pdfField.disableRequired();
     }
-    if (typeof (field as any).setFontSize === 'function') {
-      const fontSize = field.fontSize ? field.fontSize : 16;
-      (field as any).setFontSize(fontSize)
-    }
-    if (typeof (field as any).updateAppearances === 'function') {
-      const fontName = field.font ? field.font : StandardFonts.Helvetica;
-      const pdfFont = await this.getFont(fontName)
-      if (pdfFont) {
-        (field as any).updateAppearances(pdfFont)
-      }
-    }
-
     // const pdfFont = await this.getFont(StandardFonts.Helvetica)
     // if (pdfFont) {
     //   pdfField.defaultUpdateAppearances(pdfFont)
@@ -264,9 +264,19 @@ export class PDFFileGenerator {
     const form = page.doc.getForm();
     const field = form.createButton(button.name);
     await this.updatePDFField(field, button);
-    if (button.fontSize) {
-      // field.setFontSize(button.fontSize)
+
+    // Set font
+    const fontName = button.font ? button.font : StandardFonts.Helvetica;
+    const pdfFont = await this.getFont(fontName);
+    if (pdfFont) {
+      field.defaultUpdateAppearances(pdfFont)
+      field.updateAppearances(pdfFont);
     }
+
+    // Set font size
+    const fontSize = button.fontSize ? button.fontSize : 16;
+    field.setFontSize(fontSize);
+
     if (button.image) {
       const pdfImg = await this.getImage(button.image);
       if (pdfImg) {
@@ -295,6 +305,18 @@ export class PDFFileGenerator {
     const form = page.doc.getForm();
     const field = form.createDropdown(dropdown.name);
     await this.updatePDFField(field, dropdown);
+
+    // Set font
+    const fontName = dropdown.font ? dropdown.font : StandardFonts.Helvetica;
+    const pdfFont = await this.getFont(fontName);
+    if (pdfFont) {
+      field.defaultUpdateAppearances(pdfFont)
+      field.updateAppearances(pdfFont);
+    }
+
+    // Set font size
+    const fontSize = dropdown.fontSize ? dropdown.fontSize : 16;
+    field.setFontSize(fontSize);
 
     if (dropdown.options) {
       field.setOptions(dropdown.options);
@@ -327,9 +349,6 @@ export class PDFFileGenerator {
     if (dropdown.selectedOptions) {
       field.select(dropdown.selectedOptions, false);
     }
-    if (dropdown.fontSize) {
-      // field.setFontSize(dropdown.fontSize)
-    }
     const options = await this.createFieldAppearanceOptions(dropdown);
     field.addToPage(page, options);
   }
@@ -338,6 +357,18 @@ export class PDFFileGenerator {
     const form = page.doc.getForm();
     const field = form.createOptionList(optionList.name);
     await this.updatePDFField(field, optionList);
+
+    // Set font
+    const fontName = optionList.font ? optionList.font : StandardFonts.Helvetica;
+    const pdfFont = await this.getFont(fontName);
+    if (pdfFont) {
+      field.defaultUpdateAppearances(pdfFont)
+      field.updateAppearances(pdfFont);
+    }
+
+    // Set font size
+    const fontSize = optionList.fontSize ? optionList.fontSize : 16;
+    field.setFontSize(fontSize);
 
     if (optionList.options) {
       field.setOptions(optionList.options);
@@ -359,9 +390,6 @@ export class PDFFileGenerator {
     }
     if (optionList.selectedOptions) {
       field.select(optionList.selectedOptions, false);
-    }
-    if (optionList.fontSize) {
-      // field.setFontSize(optionList.fontSize)
     }
     const options = await this.createFieldAppearanceOptions(optionList);
     field.addToPage(page, options);
@@ -388,6 +416,18 @@ export class PDFFileGenerator {
     const field = form.createTextField(dateInput.name);
     this.updatePDFField(field, dateInput);
 
+    // Set font
+    const fontName = dateInput.font ? dateInput.font : StandardFonts.Helvetica;
+    const pdfFont = await this.getFont(fontName);
+    if (pdfFont) {
+      // field.defaultUpdateAppearances(pdfFont)
+      field.updateAppearances(pdfFont);
+    }
+
+    // Set font size
+    const fontSize = dateInput.fontSize ? dateInput.fontSize : 16;
+    field.setFontSize(fontSize);
+
     if (dateInput.combing === true) {
       field.enableCombing();
     } else if (dateInput.combing === false) {
@@ -412,13 +452,6 @@ export class PDFFileGenerator {
     if (dateInput.alignment) {
       field.setAlignment(dateInput.alignment);
     }
-    if (dateInput.fontSize) {
-      try {
-        field.setFontSize(dateInput.fontSize);
-      } catch (error) {
-        // console.log(error);
-      }
-    }
 
     field.disableFileSelection();
     field.disablePassword();
@@ -429,10 +462,10 @@ export class PDFFileGenerator {
       const formatter = dateInput.format ?? 'YYYY/MM/DD HH:mm:ss';
       if (dateInput.timezone) {
         const text = moment(dateInput.date).tz(dateInput.timezone).format(formatter);
-        field.setText(text);
+        field.setText(pdfFont ? filterCharSet(text, pdfFont) : text);
       } else {
         const text = moment(dateInput.date).utc().format(formatter);
-        field.setText(text);
+        field.setText(pdfFont ? filterCharSet(text, pdfFont) : text);
       }
     }
     const options = await this.createFieldAppearanceOptions(dateInput);
@@ -443,6 +476,18 @@ export class PDFFileGenerator {
     const form = page.doc.getForm();
     const field = form.createTextField(textField.name);
     this.updatePDFField(field, textField);
+
+    // Set font
+    const fontName = textField.font ? textField.font : StandardFonts.Helvetica;
+    const pdfFont = await this.getFont(fontName);
+    if (pdfFont) {
+      // field.defaultUpdateAppearances(pdfFont)
+      field.updateAppearances(pdfFont);
+    }
+
+    // Set font size
+    const fontSize = textField.fontSize ? textField.fontSize : 16;
+    field.setFontSize(fontSize);
 
     if (textField.combing === true) {
       field.enableCombing();
@@ -485,33 +530,15 @@ export class PDFFileGenerator {
     if (textField.alignment) {
       field.setAlignment(textField.alignment);
     }
-    if (textField.fontSize) {
-      try {
-        field.setFontSize(textField.fontSize);
-      } catch (error) {
-        // console.log(error);
-      }
-    }
     if (textField.text) {
-      field.setText(textField.text);
+      field.setText(pdfFont ? filterCharSet(textField.text, pdfFont) : textField.text);
     }
     const options = await this.createFieldAppearanceOptions(textField);
     field.addToPage(page, options);
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
-    const {
-      backgroundColor,
-      borderColor,
-      borderWidth,
-      font,
-      fontSize,
-      x,
-      y,
-      rotate,
-      width,
-      height
-    } = signature;
+    const { backgroundColor, borderColor, borderWidth, font, fontSize, x, y, rotate, width, height } = signature;
 
     // const form = page.doc.getForm();
     // const nameParts = splitFieldName(signature.name);
@@ -537,7 +564,7 @@ export class PDFFileGenerator {
     // Set appearance streams for widget
     // const fieldFont = options.font ?? form.getDefaultFont();
     // updateSignatureWidgetAppearance(field, widget, fieldFont);
-    
+
     // Add widget to the given page
     // page.node.addAnnot(widgetRef);
 
@@ -557,23 +584,21 @@ export class PDFFileGenerator {
       borderWidth,
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
     });
-    
-    let pdfFont: PDFFont | undefined;
-    if (font) {
-      pdfFont = await this.getFont(font);
-    }
 
-    const h = height ?? 0
-    const value = signature.signerId ?? signature.name ?? ''
-    const fz = fontSize ?? 6
-    const lh = pdfFont?.heightAtSize(fz) ?? 0
+    const fontName = font ? font : StandardFonts.Helvetica;
+    const pdfFont = await this.getFont(fontName);
     
-    page.drawText(value, {
+    const h = height ?? 0;
+    const value = signature.signerId ?? signature.name ?? '';
+    const fz = fontSize ?? 6;
+    const lh = pdfFont?.heightAtSize(fz) ?? 0;
+
+    page.drawText(pdfFont ? filterCharSet(value, pdfFont) : value, {
       font: pdfFont,
       x: x ? x : undefined,
-      y: y ? y + h - lh  : undefined,
+      y: y ? y + h - lh : undefined,
       maxWidth: width,
-      lineHeight: (lh > 0) ? lh : height,
+      lineHeight: lh > 0 ? lh : height,
       size: fontSize ?? 6,
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
       rotate: rotate ? degrees(rotate) : undefined,
@@ -587,8 +612,6 @@ export class PDFFileGenerator {
     // const options = await this.createFieldAppearanceOptions(signature)
     // field.addToPage(page, options)
   }
-
-  
 
   protected async drawImage(page: PDFPage, img: Image): Promise<void> {
     const pdfImg = await this.getImage(img);
