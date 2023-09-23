@@ -4,7 +4,6 @@ import {
   PDFDocument,
   PDFField,
   PDFFont,
-  PDFForm,
   PDFImage,
   PDFPage,
   PDFPageDrawSVGOptions,
@@ -31,7 +30,7 @@ import { OptionList } from './elements/fields/optionlist';
 import { Text } from './elements/text';
 import { Circle, Ellipse, Line, DrawablePath, Square, SVGPath } from './elements/shape';
 import { DateInput } from './elements/fields/dateinput';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 
 export interface PDFFileGeneratorOption {
   // mapping between custom font name and the font file path or binary of the font file
@@ -216,7 +215,7 @@ export class PDFFileGenerator {
     }
   }
 
-  protected async updatePDFField(form: PDFForm, pdfField: PDFField, field: Field) {
+  protected async updatePDFField(pdfField: PDFField, field: Field) {
     if (field.exported === true) {
       pdfField.enableExporting();
     } else if (field.exported === false) {
@@ -232,16 +231,18 @@ export class PDFFileGenerator {
     } else if (field.required === false) {
       pdfField.disableRequired();
     }
+  }
 
-    const fontName = field.font ? field.font : StandardFonts.Helvetica
-    const fontSize = field.fontSize ? field.fontSize : 16
+  protected async updateFontAndSize(pdfField: PDFField, field: Field) {
+    const fontName = field.font ? field.font : StandardFonts.Helvetica;
+    const fontSize = field.fontSize ? field.fontSize : 16;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
-      pdfField.defaultUpdateAppearances(pdfFont);
-      const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
-      form.updateFieldAppearances = () => {
-        return rawUpdateFieldAppearances(pdfFont);
-      };
+      if (typeof (pdfField as any).updateAppearances === 'function') {
+        (pdfField as any).updateAppearances(pdfFont)
+      } else {
+        pdfField.defaultUpdateAppearances(pdfFont);
+      }
     }
     const da = pdfField.acroField.getDefaultAppearance() ?? '';
     const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
@@ -272,26 +273,14 @@ export class PDFFileGenerator {
   protected async addButton(page: PDFPage, button: Button): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createButton(button.name);
-    await this.updatePDFField(form, field, button);
-
-    // Set font
-    const fontName = button.font ? button.font : StandardFonts.Helvetica;
-    const pdfFont = await this.getFont(fontName);
-    if (pdfFont) {
-      // field.defaultUpdateAppearances(pdfFont)
-      field.updateAppearances(pdfFont);
-    }
-
-    // Set font size
-    const fontSize = button.fontSize ? button.fontSize : 16;
-    field.setFontSize(fontSize);
-
+    await this.updatePDFField(field, button);
     if (button.image) {
       const pdfImg = await this.getImage(button.image);
       if (pdfImg) {
         field.setImage(pdfImg, button.imageAlignment);
       }
     }
+    this.updateFontAndSize(field, button)
     const options = await this.createFieldAppearanceOptions(button);
     field.addToPage(button.text, page, options);
   }
@@ -299,8 +288,7 @@ export class PDFFileGenerator {
   protected async addCheckBox(page: PDFPage, checkBox: CheckBox): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createCheckBox(checkBox.name);
-    await this.updatePDFField(form, field, checkBox);
-
+    await this.updatePDFField(field, checkBox);
     if (checkBox.checked === true) {
       field.check();
     } else if (checkBox.checked === false) {
@@ -313,20 +301,7 @@ export class PDFFileGenerator {
   protected async addDropdown(page: PDFPage, dropdown: Dropdown): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createDropdown(dropdown.name);
-    await this.updatePDFField(form, field, dropdown);
-
-    // Set font
-    const fontName = dropdown.font ? dropdown.font : StandardFonts.Helvetica;
-    const pdfFont = await this.getFont(fontName);
-    if (pdfFont) {
-      // field.defaultUpdateAppearances(pdfFont)
-      field.updateAppearances(pdfFont);
-    }
-
-    // Set font size
-    const fontSize = dropdown.fontSize ? dropdown.fontSize : 16;
-    field.setFontSize(fontSize);
-
+    await this.updatePDFField(field, dropdown);
     if (dropdown.options) {
       field.setOptions(dropdown.options);
     }
@@ -358,6 +333,7 @@ export class PDFFileGenerator {
     if (dropdown.selectedOptions) {
       field.select(dropdown.selectedOptions, false);
     }
+    this.updateFontAndSize(field, dropdown)
     const options = await this.createFieldAppearanceOptions(dropdown);
     field.addToPage(page, options);
   }
@@ -365,20 +341,7 @@ export class PDFFileGenerator {
   protected async addOptionList(page: PDFPage, optionList: OptionList): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createOptionList(optionList.name);
-    await this.updatePDFField(form, field, optionList);
-
-    // Set font
-    const fontName = optionList.font ? optionList.font : StandardFonts.Helvetica;
-    const pdfFont = await this.getFont(fontName);
-    if (pdfFont) {
-      // field.defaultUpdateAppearances(pdfFont)
-      field.updateAppearances(pdfFont);
-    }
-
-    // Set font size
-    const fontSize = optionList.fontSize ? optionList.fontSize : 16;
-    field.setFontSize(fontSize);
-
+    await this.updatePDFField(field, optionList);
     if (optionList.options) {
       field.setOptions(optionList.options);
     }
@@ -400,6 +363,8 @@ export class PDFFileGenerator {
     if (optionList.selectedOptions) {
       field.select(optionList.selectedOptions, false);
     }
+    
+    this.updateFontAndSize(field, optionList)
     const options = await this.createFieldAppearanceOptions(optionList);
     field.addToPage(page, options);
   }
@@ -407,7 +372,7 @@ export class PDFFileGenerator {
   protected async addRadioGroup(page: PDFPage, radioGroup: RadioGroup): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createRadioGroup(radioGroup.name);
-    this.updatePDFField(form, field, radioGroup);
+    this.updatePDFField(field, radioGroup);
 
     if (radioGroup.options) {
       for (const radioOption of radioGroup.options) {
@@ -423,19 +388,7 @@ export class PDFFileGenerator {
   protected async addDateInput(page: PDFPage, dateInput: DateInput): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createTextField(dateInput.name);
-    this.updatePDFField(form, field, dateInput);
-
-    // Set font
-    const fontName = dateInput.font ? dateInput.font : StandardFonts.Helvetica;
-    const pdfFont = await this.getFont(fontName);
-    if (pdfFont) {
-      // field.defaultUpdateAppearances(pdfFont)
-      field.updateAppearances(pdfFont);
-    }
-
-    // Set font size
-    const fontSize = dateInput.fontSize ? dateInput.fontSize : 16;
-    field.setFontSize(fontSize);
+    this.updatePDFField(field, dateInput);
 
     if (dateInput.combing === true) {
       field.enableCombing();
@@ -471,12 +424,17 @@ export class PDFFileGenerator {
       const formatter = dateInput.format ?? 'YYYY/MM/DD HH:mm:ss';
       if (dateInput.timezone) {
         const text = moment(dateInput.date).tz(dateInput.timezone).format(formatter);
-        field.setText(pdfFont ? filterCharSet(text, pdfFont) : text);
+        field.setText(text);
       } else {
         const text = moment(dateInput.date).utc().format(formatter);
-        field.setText(pdfFont ? filterCharSet(text, pdfFont) : text);
+        field.setText(text);
       }
     }
+
+    // IMPORTANT!!!
+    // Text must be set before updateFontAndSize
+    this.updateFontAndSize(field, dateInput)
+
     const options = await this.createFieldAppearanceOptions(dateInput);
     field.addToPage(page, options);
   }
@@ -484,20 +442,9 @@ export class PDFFileGenerator {
   protected async addTextField(page: PDFPage, textField: TextField): Promise<void> {
     const form = page.doc.getForm();
     const field = form.createTextField(textField.name);
-    this.updatePDFField(form, field, textField);
 
-    // Set font
-    const fontName = textField.font ? textField.font : StandardFonts.Helvetica;
-    const pdfFont = await this.getFont(fontName);
-    if (pdfFont) {
-      // field.defaultUpdateAppearances(pdfFont)
-      field.updateAppearances(pdfFont);
-    }
-
-    // Set font size
-    const fontSize = textField.fontSize ? textField.fontSize : 16;
-    field.setFontSize(fontSize);
-
+    this.updatePDFField(field, textField);
+    
     if (textField.combing === true) {
       field.enableCombing();
     } else if (textField.combing === false) {
@@ -539,9 +486,15 @@ export class PDFFileGenerator {
     if (textField.alignment) {
       field.setAlignment(textField.alignment);
     }
+
     if (textField.text) {
-      field.setText(pdfFont ? filterCharSet(textField.text, pdfFont) : textField.text);
+      field.setText(textField.text);
     }
+
+    // IMPORTANT!!!
+    // Text must be set before updateFontAndSize
+    this.updateFontAndSize(field, textField);
+
     const options = await this.createFieldAppearanceOptions(textField);
     field.addToPage(page, options);
   }
@@ -602,7 +555,7 @@ export class PDFFileGenerator {
     const fz = fontSize ?? 6;
     const lh = pdfFont?.heightAtSize(fz) ?? 0;
 
-    page.drawText(pdfFont ? filterCharSet(value, pdfFont) : value, {
+    page.drawText(value, {
       font: pdfFont,
       x: x ? x : undefined,
       y: y ? y + h - lh : undefined,

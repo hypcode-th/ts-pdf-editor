@@ -13,9 +13,9 @@ export interface IPage {
 }
 
 export class Page {
-  private refFileId?: string
-  private refPageIndex?: number
-  private elements: Element[]
+  public refFileId?: string
+  public refPageIndex?: number
+  public elements: Element[]
   public pageSize: Size
   public font: string 
   public fontSize: number

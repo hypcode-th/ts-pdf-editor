@@ -1,6 +1,6 @@
 {
   "name": "@hypcode-th/ts-pdf-editor",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "description": "PDF editor by Hypcode",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -31,6 +31,7 @@
   "homepage": "https://github.com/hypcode-th/ts-pdf-editor#readme",
   "devDependencies": {
     "@types/jest": "^27.5.1",
+    "fs": "^0.0.1-security",
     "jest": "^28.1.0",
     "prettier": "^2.6.2",
     "ts-jest": "^28.0.3",
