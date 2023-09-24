@@ -281,8 +281,8 @@ export class PDFFileGenerator {
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
-    const { rotate } = element
-    let { x, y, width, height } = element;
+    const { y, rotate } = element
+    let { x, width, height } = element;
     let pdfFont: PDFFont | undefined;
     if (element.font) {
       pdfFont = await this.getFont(element.font);
