@@ -12,4 +12,18 @@ export interface TextField extends Field {
   maxLength?: number
   alignment?: TextAlignment
   text?: string
+
+  // Additional attributes
+  fitWidth?: boolean
+  fitHeight?: boolean
+
+  style?: 'text' | 'decimal' | 'currency' | 'percent'
+  locale?: string
+  currency?: string
+  currencyDisplay?: 'symbol' | 'code' | 'name'
+  maximumFractionDigits?: number 
+  maximumSignificantDigits?: number 
+  minimumFractionDigits?: number 
+  minimumIntegerDigits?: number
+  minimumSignificantDigits?: number 
 }

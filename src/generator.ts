@@ -10,6 +10,7 @@ import {
   rgb,
   setFontAndSize,
   StandardFonts,
+  TextAlignment,
 } from 'pdf-lib';
 import * as fontkit from '@pdf-lib/fontkit';
 import { IDocument } from './document';
@@ -179,6 +180,34 @@ export class PDFFileGenerator {
     }
   }
 
+  protected getTextFieldDisplayText(field: TextField): string {
+    if (!field.text) return '';
+    if (!field.style || field.style === 'text') return field.text ?? '';
+    const num = new Number(field.text);
+    if (Number.isNaN(num)) {
+      return field.text;
+    }
+    return num.toLocaleString(field.locale ?? 'en-US', {
+      style: field.style,
+      currency: field.currency,
+      currencyDisplay: field.currencyDisplay,
+      maximumFractionDigits: field.maximumFractionDigits,
+      maximumSignificantDigits: field.maximumSignificantDigits,
+      minimumFractionDigits: field.minimumFractionDigits,
+      minimumIntegerDigits: field.minimumIntegerDigits,
+      minimumSignificantDigits: field.minimumSignificantDigits,
+    });
+  }
+  protected getDateInputDisplayText(field: DateInput): string {
+    if (field.date) {
+      const formatter = field.format ?? 'YYYY/MM/DD HH:mm:ss';
+      return field.timezone
+        ? moment(field.date).tz(field.timezone).format(formatter)
+        : moment(field.date).utc().format(formatter);
+    }
+    return ''
+  }
+
   protected async getFont(fontName: string): Promise<PDFFont> {
     let font = this.fontDict.get(fontName);
     if (font) return font;
@@ -233,13 +262,13 @@ export class PDFFileGenerator {
     }
   }
 
-  protected async updateFontAndSize(pdfField: PDFField, field: Field) {
+  protected async updateFontAndSize(pdfField: PDFField, field: Field): Promise<PDFFont> {
     const fontName = field.font ? field.font : StandardFonts.Helvetica;
     const fontSize = field.fontSize ? field.fontSize : 16;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
       if (typeof (pdfField as any).updateAppearances === 'function') {
-        (pdfField as any).updateAppearances(pdfFont)
+        (pdfField as any).updateAppearances(pdfFont);
       } else {
         pdfField.defaultUpdateAppearances(pdfFont);
       }
@@ -247,14 +276,39 @@ export class PDFFileGenerator {
     const da = pdfField.acroField.getDefaultAppearance() ?? '';
     const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
     pdfField.acroField.setDefaultAppearance(newDa);
+
+    return pdfFont;
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
-    const { x, y, width, height, rotate } = element;
+    const { rotate } = element
+    let { x, y, width, height } = element;
     let pdfFont: PDFFont | undefined;
     if (element.font) {
       pdfFont = await this.getFont(element.font);
     }
+
+    if (pdfFont && (element.fitWidth || element.fitHeight)) {
+      const text = (element.elemType === ElementType.DateInput) 
+      ? this.getDateInputDisplayText(element as DateInput)
+      : (element.elemType === ElementType.TextField)
+      ? this.getTextFieldDisplayText(element as TextField)
+      : ''
+      const fontSize = element.fontSize ?? 16
+      if (element.fitWidth) {
+        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize)  
+        if (element.alignment === TextAlignment.Center) {
+          x = x + ((width - autoWidth) * 0.5)
+        } else if (element.alignment === TextAlignment.Right) {
+          x = x + (width - autoWidth)
+        }
+        width = autoWidth
+      }
+      if (element.fitHeight) {
+        height = pdfFont.heightAtSize(fontSize)
+      }
+    }
+
     return {
       x,
       y,
@@ -280,7 +334,7 @@ export class PDFFileGenerator {
         field.setImage(pdfImg, button.imageAlignment);
       }
     }
-    this.updateFontAndSize(field, button)
+    await this.updateFontAndSize(field, button);
     const options = await this.createFieldAppearanceOptions(button);
     field.addToPage(button.text, page, options);
   }
@@ -333,7 +387,7 @@ export class PDFFileGenerator {
     if (dropdown.selectedOptions) {
       field.select(dropdown.selectedOptions, false);
     }
-    this.updateFontAndSize(field, dropdown)
+    await this.updateFontAndSize(field, dropdown);
     const options = await this.createFieldAppearanceOptions(dropdown);
     field.addToPage(page, options);
   }
@@ -363,8 +417,8 @@ export class PDFFileGenerator {
     if (optionList.selectedOptions) {
       field.select(optionList.selectedOptions, false);
     }
-    
-    this.updateFontAndSize(field, optionList)
+
+    await this.updateFontAndSize(field, optionList);
     const options = await this.createFieldAppearanceOptions(optionList);
     field.addToPage(page, options);
   }
@@ -421,19 +475,12 @@ export class PDFFileGenerator {
     field.disableSpellChecking();
 
     if (dateInput.date) {
-      const formatter = dateInput.format ?? 'YYYY/MM/DD HH:mm:ss';
-      if (dateInput.timezone) {
-        const text = moment(dateInput.date).tz(dateInput.timezone).format(formatter);
-        field.setText(text);
-      } else {
-        const text = moment(dateInput.date).utc().format(formatter);
-        field.setText(text);
-      }
+      field.setText(this.getDateInputDisplayText(dateInput))
     }
 
     // IMPORTANT!!!
     // Text must be set before updateFontAndSize
-    this.updateFontAndSize(field, dateInput)
+    await this.updateFontAndSize(field, dateInput);
 
     const options = await this.createFieldAppearanceOptions(dateInput);
     field.addToPage(page, options);
@@ -444,7 +491,7 @@ export class PDFFileGenerator {
     const field = form.createTextField(textField.name);
 
     this.updatePDFField(field, textField);
-    
+
     if (textField.combing === true) {
       field.enableCombing();
     } else if (textField.combing === false) {
@@ -488,12 +535,12 @@ export class PDFFileGenerator {
     }
 
     if (textField.text) {
-      field.setText(textField.text);
+      field.setText(this.getTextFieldDisplayText(textField));
     }
 
     // IMPORTANT!!!
     // Text must be set before updateFontAndSize
-    this.updateFontAndSize(field, textField);
+    await this.updateFontAndSize(field, textField);
 
     const options = await this.createFieldAppearanceOptions(textField);
     field.addToPage(page, options);

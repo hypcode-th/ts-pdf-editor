@@ -10,4 +10,8 @@ export interface DateInput extends Field {
   date?: Date
   format?: string
   timezone?: string
+
+  // Additional attributes
+  fitWidth?: boolean
+  fitHeight?: boolean
 }

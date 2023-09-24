@@ -45,10 +45,31 @@ describe('test create pdf document with text field', () => {
         width: elementWidth,
         height: elementHeight,
         rotate: 0,
-        alignment: TextAlignment.Left,
         text: 'ข้อความทดสอบ',
       } as TextField
     pdfPage.addElement(textField as Element)
+
+    // Element 2
+    currentY = currentY - elementHeight - elementGap
+    const textField2 = {
+        name: 'text_field.1',
+        elemType: ElementType.TextField,
+        font: "NotoSansThai-Light",
+        fontSize: 14,
+        x: pageMargin,
+        y: currentY,
+        width: elementWidth,
+        height: elementHeight,
+        rotate: 0,
+        alignment: TextAlignment.Right,
+        fitWidth: true,
+        fitHeight: true,
+        text: '12000',
+        locale: 'th-TH',
+        style: 'currency',
+        currency: 'THB'
+      } as TextField
+    pdfPage.addElement(textField2 as Element)
 
     // Element 2
     currentY = currentY - elementHeight - elementGap
