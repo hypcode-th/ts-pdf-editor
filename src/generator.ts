@@ -183,7 +183,7 @@ export class PDFFileGenerator {
   protected getTextFieldDisplayText(field: TextField): string {
     if (!field.text) return '';
     if (!field.style || field.style === 'text') return field.text ?? '';
-    const num = new Number(field.text);
+    const num = Number(field.text);
     if (Number.isNaN(num)) {
       return field.text;
     }
