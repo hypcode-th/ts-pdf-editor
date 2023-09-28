@@ -183,12 +183,15 @@ export class PDFFileGenerator {
   protected getTextFieldDisplayText(field: TextField): string {
     if (!field.text) return '';
     if (!field.style || field.style === 'text') return field.text ?? '';
-    const num = Number(field.text);
+    let num = Number(field.text);
     if (Number.isNaN(num)) {
       return field.text;
     }
+    if (field.style === 'percent_value') {
+      num = num / 100.00
+    }
     return num.toLocaleString(field.locale ?? 'en-US', {
-      style: field.style,
+      style: field.style === 'percent_value' ? 'percent' : field.style,
       currency: field.currency,
       currencyDisplay: field.currencyDisplay,
       maximumFractionDigits: field.maximumFractionDigits,

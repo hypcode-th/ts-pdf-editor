@@ -17,7 +17,7 @@ export interface TextField extends Field {
   fitWidth?: boolean
   fitHeight?: boolean
 
-  style?: 'text' | 'decimal' | 'currency' | 'percent'
+  style?: 'text' | 'decimal' | 'currency' | 'percent' | 'percent_value'
   locale?: string
   currency?: string
   currencyDisplay?: 'symbol' | 'code' | 'name'
