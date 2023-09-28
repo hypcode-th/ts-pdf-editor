@@ -18,6 +18,7 @@ export enum ElementType {
   TextField = "textfield",
   Signature = "signature",
   DateInput = "dateinput",
+  DateSigned = "datesigned",
 };
 
 export interface Element {
