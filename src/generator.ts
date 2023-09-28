@@ -192,8 +192,8 @@ export class PDFFileGenerator {
     }
     return num.toLocaleString(field.locale ?? 'en-US', {
       style: field.style === 'percent_value' ? 'percent' : field.style,
-      currency: field.currency,
-      currencyDisplay: field.currencyDisplay,
+      currency: field.style === 'currency' ? (field.currency ?? 'USD') : undefined,
+      currencyDisplay: field.style === 'currency' ? (field.currencyDisplay ?? 'symbol') : undefined,
       maximumFractionDigits: field.maximumFractionDigits,
       maximumSignificantDigits: field.maximumSignificantDigits,
       minimumFractionDigits: field.minimumFractionDigits,
