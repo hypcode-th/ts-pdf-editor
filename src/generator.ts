@@ -312,7 +312,7 @@ export class PDFFileGenerator {
         width = autoWidth
       }
       if (element.fitHeight) {
-        height = pdfFont.heightAtSize(fontSize)
+        height = pdfFont.heightAtSize(fontSize, { descender: true })
       }
     }
 

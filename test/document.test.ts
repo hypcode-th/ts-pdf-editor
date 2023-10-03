@@ -63,7 +63,7 @@ describe('test create pdf document with text field', () => {
         rotate: 0,
         alignment: TextAlignment.Right,
         fitWidth: true,
-        fitHeight: true,
+        fitHeight: false,
         text: '12000',
         locale: 'th-TH',
         style: 'currency',
