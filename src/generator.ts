@@ -31,7 +31,6 @@ import { OptionList } from './elements/fields/optionlist';
 import { Text } from './elements/text';
 import { Circle, Ellipse, Line, DrawablePath, Square, SVGPath } from './elements/shape';
 import { DateInput } from './elements/fields/dateinput';
-import { DateSigned } from './elements/fields/datesigned';
 
 import moment from 'moment-timezone';
 
@@ -155,8 +154,6 @@ export class PDFFileGenerator {
         return await this.addCheckBox(page, elem);
       case ElementType.Signature:
         return await this.addSignature(page, elem);
-      case ElementType.DateSigned:
-        return await this.addDateSigned(page, elem);
       case ElementType.RadioGroup:
         return await this.addRadioGroup(page, elem);
       case ElementType.Dropdown:
@@ -553,39 +550,6 @@ export class PDFFileGenerator {
     field.addToPage(page, options);
   }
 
-  protected async addDateSigned(page: PDFPage, dateSigned: DateSigned): Promise<void> {
-    const { backgroundColor, borderColor, borderWidth, font, fontSize, x, y, rotate, width, height } = dateSigned;
-    page.drawRectangle({
-      x,
-      y,
-      width,
-      height,
-      rotate: rotate ? degrees(rotate) : undefined,
-      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
-      borderWidth,
-      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-    });
-
-    const fontName = font ? font : StandardFonts.Helvetica;
-    const pdfFont = await this.getFont(fontName);
-
-    const h = height ?? 0;
-    const value = dateSigned.signerId ?? dateSigned.name ?? '';
-    const fz = fontSize ?? 6;
-    const lh = pdfFont?.heightAtSize(fz) ?? 0;
-
-    page.drawText(value, {
-      font: pdfFont,
-      x: x ? x : undefined,
-      y: y ? y + h - lh : undefined,
-      maxWidth: width,
-      lineHeight: lh > 0 ? lh : height,
-      size: fontSize ?? 6,
-      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-      rotate: rotate ? degrees(rotate) : undefined,
-    });
-  }
-
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
     const { backgroundColor, borderColor, borderWidth, font, fontSize, x, y, rotate, width, height } = signature;
 
@@ -638,8 +602,8 @@ export class PDFFileGenerator {
     const pdfFont = await this.getFont(fontName);
 
     const h = height ?? 0;
-    const value = signature.signerId ?? signature.name ?? '';
-    const fz = fontSize ?? 6;
+    const value = signature.anchorString ?? signature.name ?? '';
+    const fz = 6;
     const lh = pdfFont?.heightAtSize(fz) ?? 0;
 
     page.drawText(value, {
@@ -648,7 +612,7 @@ export class PDFFileGenerator {
       y: y ? y + h - lh : undefined,
       maxWidth: width,
       lineHeight: lh > 0 ? lh : height,
-      size: fontSize ?? 6,
+      size: 6,
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
       rotate: rotate ? degrees(rotate) : undefined,
     });

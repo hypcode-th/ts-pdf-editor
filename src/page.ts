@@ -118,10 +118,7 @@ export class Page {
             (elem as any).selectedOption = value;
             break;
           case ElementType.Signature:
-            (elem as any).signerId = value;
-            break;
-          case ElementType.DateSigned:
-            (elem as any).signerId = value;
+            (elem as any).anchorString = value;
             break;
           case ElementType.CheckBox:
             if (typeof value === 'boolean') {

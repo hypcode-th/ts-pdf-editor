@@ -1,6 +1,6 @@
 import { Field } from "./field";
 
 export interface Signature extends Field {
-  signerId: string
-  type: string // 'sign', 'initial', 'stamp'
+  anchorString: string // Anchor string for DocuSign
+  type: 'sign' | 'initial' | 'stamp' | 'datesigned'
 }
