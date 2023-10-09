@@ -1,48 +1,48 @@
-import { Field } from "./field";
+import { Field } from './field';
 
 export interface Signature extends Field {
-  anchorStringFont?: string // Helvetica is the default font
-  anchorStringFontSize?: number // Default is 2
-  
+  anchorStringFont?: string; // Helvetica is the default font
+  anchorStringFontSize?: number; // Default is 2
+
   // =====================================================================================================
   // The following attributes are the attributes of the DocuSign signHere, initailHere and dateSigned tabs
   // =====================================================================================================
 
-  anchorAllowWhiteSpaceInCharacters?: boolean // true is the default value
-  anchorCaseSensitive?: boolean // false is the default value
-  anchorHorizontalAlignment?: 'left' | 'right' | undefined // left is the default value
-  anchorIgnoreIfNotPresent?: boolean // true is the default value
-  anchorMatchWholeWord?: boolean // false is the default value
-  anchorString: string // Anchor string for DocuSign
-  anchorUnits?: 'pixels' | 'inches' | 'mms' | 'cms' | undefined // default is pixels
-  anchorXOffset?: number
-  anchorYOffset?: number
-  caption?: string
-  isSealSignTab?: boolean
-  recipientId?: string
-  recipientIdGuid?: string
+  anchorAllowWhiteSpaceInCharacters?: boolean; // true is the default value
+  anchorCaseSensitive?: boolean; // false is the default value
+  anchorHorizontalAlignment?: 'left' | 'right' | undefined; // left is the default value
+  anchorIgnoreIfNotPresent?: boolean; // true is the default value
+  anchorMatchWholeWord?: boolean; // false is the default value
+  anchorString: string; // Anchor string for DocuSign
+  anchorUnits?: 'pixels' | 'inches' | 'mms' | 'cms' | undefined; // default is pixels
+  anchorXOffset?: number;
+  anchorYOffset?: number;
+  caption?: string;
+  isSealSignTab?: boolean;
+  recipientId?: string;
+  recipientIdGuid?: string;
 
-  // Scales the size of the tab. 
-  // This field accepts values from 0.5 to 2.0, 
-  // where 0.5 is half the normal size, 1.0 is normal size, 
+  // Scales the size of the tab.
+  // This field accepts values from 0.5 to 2.0,
+  // where 0.5 is half the normal size, 1.0 is normal size,
   // and 2.0 is twice the normal size.
-  scaleValue?: number
+  scaleValue?: number;
 
-  stampType?: 'signature' | 'stamp' | undefined
+  stampType?: 'signature' | 'stamp' | undefined;
 
-  status?: 'active' | 'signed' | 'declined' | 'na' | undefined
+  status?: 'active' | 'signed' | 'declined' | 'na' | undefined;
 
-  tabGroupLabels?: string[]
+  tabGroupLabels?: string[];
 
-  tabId?: string
+  tabId?: string;
 
-  tabLabel?: string
+  tabLabel?: string;
 
-  tabOrder?: number
+  tabOrder?: number;
 
-  tabType?: 'signHere' | 'initialHere' | 'dateSigned' | undefined
+  tabType?: 'signHere' | 'initialHere' | 'dateSigned' | undefined;
 
-  tooltip?: string
+  tooltip?: string;
 }
 
 const docuSignTabFonts = [
@@ -65,28 +65,26 @@ const docuSignTabFonts = [
 ];
 
 const isItalicFont = (font?: string): boolean => {
-  if (!font) return false 
-  const lfont = font.toLowerCase()
-  return lfont.includes('italic') || lfont.includes('oblique')
-}
+  if (!font) return false;
+  const lfont = font.toLowerCase();
+  return lfont.includes('italic') || lfont.includes('oblique');
+};
 
 const isBoldFont = (font?: string): boolean => {
-  if (!font) return false 
-  const lfont = font.toLowerCase()
-  return lfont.includes('bold')
-}
+  if (!font) return false;
+  const lfont = font.toLowerCase();
+  return lfont.includes('bold');
+};
 
-const fontToDocuSignTabFont = (
-  font?: string,
-): string => {
+const fontToDocuSignTabFont = (font?: string): string => {
   if (font) {
     const lfont = font.toLowerCase().replace(/\s/g, '');
     for (const fname of docuSignTabFonts) {
-      const lfname = fname.toLowerCase()
+      const lfname = fname.toLowerCase();
       if (lfont.includes(lfname)) {
-        return fname
+        return fname;
       }
-    } 
+    }
   }
   return 'Default';
 };
@@ -135,39 +133,35 @@ const fontSizeToDocuSignTabFontSize = (fontSize?: number): string => {
 };
 
 const colorHexToBlackOrWhite = (hex?: string): string => {
-  if (!hex) return 'Black'
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(
-    hex,
-  );
-  if (!result || result.length < 4) return 'Black'
+  if (!hex) return 'Black';
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex);
+  if (!result || result.length < 4) return 'Black';
   const red = parseInt(result[1], 16) / 255.0;
   const green = parseInt(result[2], 16) / 255.0;
   const blue = parseInt(result[3], 16) / 255.0;
   const v = Math.max(red, green, blue);
-  return (v > 0.5) ? 'White' : 'Black'
-}
+  return v > 0.5 ? 'White' : 'Black';
+};
 
 const colorHexToDocuSignTabTextColor = (hex?: string): string => {
-  if (!hex) return 'Black'
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(
-    hex,
-  );
-  if (!result || result.length < 4) return 'Black'
+  if (!hex) return 'Black';
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex);
+  if (!result || result.length < 4) return 'Black';
   const red = parseInt(result[1], 16) / 255.0;
   const green = parseInt(result[2], 16) / 255.0;
   const blue = parseInt(result[3], 16) / 255.0;
-  var rr: number;
-  var gg: number;
-  var bb: number;
-  var h: number = 0;
-  var s: number = 0;
-  var v: number = 0;
+  let rr: number;
+  let gg: number;
+  let bb: number;
+  let h: number = 0;
+  let s: number = 0;
+  let v: number = 0;
 
   v = Math.max(red, green, blue);
   const diff = v - Math.min(red, green, blue);
   const diffc = (c: number) => (v - c) / 6 / diff + 1 / 2;
   const percentRoundFn = (num: number) => Math.round(num * 100) / 100;
-  if (diff == 0) {
+  if (diff === 0) {
     h = s = 0;
   } else {
     s = diff / v;
@@ -209,41 +203,117 @@ const colorHexToDocuSignTabTextColor = (hex?: string): string => {
 };
 
 const toBooleanString = (v?: boolean): string | undefined => {
-  if (v === undefined) return undefined
-  return (v) ? 'true' : 'false'
-}
+  if (v === undefined) return undefined;
+  return v ? 'true' : 'false';
+};
 
 const toIntegerNumberString = (v?: number): string | undefined => {
-  if (v === undefined) return undefined
-  return `${Math.round(v)}`
-}
+  if (v === undefined) return undefined;
+  return `${Math.round(v)}`;
+};
 
 export interface CreateDocuSignTabOptions {
   // Set xPosition and yPosition of tab with the x and y of the element
-  useElementPosition?: boolean
+  useElementPosition?: boolean;
 
   // Set width and height of tab with the width and height of the element
-  useElementSize?: boolean
+  useElementSize?: boolean;
 
-  // Auto select DocuSign fontColor from the text color (HEX)
-  // Otherwise, the fontColor will be 'Black' or 'White' depends on the color's value (V of HSV)
-  autoFontColor?: boolean 
+  // DocuSign font to override the PDF element font
+  // For tabType = 'dateSigned' only
+  font?:
+    | 'Default'
+    | 'ArialNarrow'
+    | 'Arial'
+    | 'Calibri'
+    | 'CourierNew'
+    | 'Garamond'
+    | 'Georgia'
+    | 'Helvetica'
+    | 'LucidaConsole'
+    | 'MSGothic'
+    | 'MSMincho'
+    | 'OCR-A'
+    | 'Tahoma'
+    | 'TimesNewRoman'
+    | 'Trebuchet'
+    | 'Verdana'
+    | undefined;
+
+  // DocuSign fontColor to override the PDF element textColor
+  // For tabType = 'dateSigned' only
+  fontColor?:
+    | 'Auto' // Auto choose color from textColor HSV
+    | 'BW' // Auto choose Black or White based on color's value (V of HSV) 
+    | 'Black'
+    | 'BrightBlue'
+    | 'BrightRed'
+    | 'DarkGreen'
+    | 'DarkRed'
+    | 'Gold'
+    | 'Green'
+    | 'NavyBlue'
+    | 'Purple'
+    | 'White'
+    | undefined; // Auto will applied when undefined
+
+  // DocuSign fontSize to override the PDF element fontSize
+  // For tabType = 'dateSigned' only
+  fontSize?:
+    | 'Size7'
+    | 'Size8'
+    | 'Size9'
+    | 'Size10'
+    | 'Size11'
+    | 'Size12'
+    | 'Size14'
+    | 'Size16'
+    | 'Size18'
+    | 'Size20'
+    | 'Size22'
+    | 'Size24'
+    | 'Size26'
+    | 'Size28'
+    | 'Size36'
+    | 'Size48'
+    | 'Size72'
+    | undefined;
+
+  // DocuSign bold font style
+  // For tabType = 'dateSigned' only
+  bold?: boolean;
+
+  // DocuSign italic font style
+  // For tabType = 'dateSigned' only
+  italic?: boolean;
 }
 
 export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptions): any => {
-  let font = undefined as string | undefined 
-  let fontSize = undefined as string | undefined 
-  let fontColor = undefined as string | undefined
-  let bold = undefined as boolean | undefined
-  let italic = undefined as boolean | undefined 
+  let font = undefined as string | undefined;
+  let fontSize = undefined as string | undefined;
+  let fontColor = undefined as string | undefined;
+  let bold = undefined as boolean | undefined;
+  let italic = undefined as boolean | undefined;
   if (s.tabType === 'dateSigned') {
-    font = fontToDocuSignTabFont(s.font)
-    fontSize = fontSizeToDocuSignTabFontSize(s.fontSize)
-    fontColor = (options?.autoFontColor === true) 
-    ? colorHexToDocuSignTabTextColor(s.textColor) 
-    : colorHexToBlackOrWhite(s.textColor)
-    bold = isBoldFont(s.font)
-    italic = isItalicFont(s.font)
+    font = options?.font ?? fontToDocuSignTabFont(s.font);
+    fontSize = options?.fontSize ?? fontSizeToDocuSignTabFontSize(s.fontSize);
+    if (options?.fontColor) {
+      switch (options.fontColor) {
+        case 'Auto':
+          fontColor = colorHexToDocuSignTabTextColor(s.textColor)
+          break;
+        case 'BW':
+          fontColor = colorHexToBlackOrWhite(s.textColor);
+          break;
+        default:
+          fontColor = options.fontColor
+          break;
+      }
+    } else {
+      fontColor = colorHexToDocuSignTabTextColor(s.textColor)
+    }
+    bold = (options?.bold !== undefined) ? options.bold : isBoldFont(s.font);
+    italic = (options?.italic !== undefined) ? options.italic : isItalicFont(s.font);
   }
   return {
     anchorAllowWhiteSpaceInCharacters: toBooleanString(s.anchorAllowWhiteSpaceInCharacters === false),
@@ -251,8 +321,8 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     anchorHorizontalAlignment: s.anchorHorizontalAlignment,
     anchorIgnoreIfNotPresent: toBooleanString(s.anchorIgnoreIfNotPresent),
     anchorMatchWholeWord: toBooleanString(s.anchorMatchWholeWord),
-    anchorString: (s.anchorString) ? s.anchorString : s.id,
-    anchorUnits: s.anchorUnits, 
+    anchorString: s.anchorString ? s.anchorString : s.id,
+    anchorUnits: s.anchorUnits,
     anchorXOffset: s.anchorXOffset,
     anchorYOffset: s.anchorYOffset,
     caption: s.caption,
@@ -260,22 +330,22 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     recipientId: s.recipientId,
     recipientIdGuid: s.recipientIdGuid,
     scaleValue: s.scaleValue,
-    stampType: (s.tabType === 'signHere' || s.tabType === undefined) ? s.stampType : undefined, 
+    stampType: s.tabType === 'signHere' || s.tabType === undefined ? s.stampType : undefined,
     status: s.status,
     tabGroupLabels: s.tabGroupLabels,
-    tabId: s.tabId, 
-    tabLabel: s.tabLabel, 
+    tabId: s.tabId,
+    tabLabel: s.tabLabel,
     tabOrder: s.tabOrder,
     tabType: s.tabType,
     tooltip: s.tooltip,
-    height: (options?.useElementSize === true) ? toIntegerNumberString(s.height) : undefined,
-    width: (options?.useElementSize === true) ? toIntegerNumberString(s.width) : undefined,
-    xPosition: (options?.useElementPosition === true) ? toIntegerNumberString(s.x) : undefined,
-    yPosition: (options?.useElementPosition === true) ? toIntegerNumberString(s.y) : undefined,
+    height: options?.useElementSize === true ? toIntegerNumberString(s.height) : undefined,
+    width: options?.useElementSize === true ? toIntegerNumberString(s.width) : undefined,
+    xPosition: options?.useElementPosition === true ? toIntegerNumberString(s.x) : undefined,
+    yPosition: options?.useElementPosition === true ? toIntegerNumberString(s.y) : undefined,
     font,
     fontColor,
     fontSize,
     bold,
     italic,
-  } as any
-}
+  } as any;
+};
