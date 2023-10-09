@@ -551,7 +551,7 @@ export class PDFFileGenerator {
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
-    const { backgroundColor, borderColor, borderWidth, font, fontSize, x, y, rotate, width, height } = signature;
+    const { backgroundColor, borderColor, borderWidth, anchorStringFont, anchorStringFontSize, x, y, rotate, width, height } = signature;
 
     // const form = page.doc.getForm();
     // const nameParts = splitFieldName(signature.name);
@@ -598,12 +598,12 @@ export class PDFFileGenerator {
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
     });
 
-    const fontName = font ? font : StandardFonts.Helvetica;
+    const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
 
     const h = height ?? 0;
     const value = signature.anchorString ?? signature.name ?? '';
-    const fz = 6;
+    const fz = anchorStringFontSize ?? 2;
     const lh = pdfFont?.heightAtSize(fz) ?? 0;
 
     page.drawText(value, {
@@ -612,7 +612,7 @@ export class PDFFileGenerator {
       y: y ? y + h - lh : undefined,
       maxWidth: width,
       lineHeight: lh > 0 ? lh : height,
-      size: 6,
+      size: anchorStringFontSize ?? 2,
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
       rotate: rotate ? degrees(rotate) : undefined,
     });
