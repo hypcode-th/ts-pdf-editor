@@ -1,6 +1,6 @@
 {
   "name": "@hypcode-th/ts-pdf-editor",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "PDF editor by Hypcode",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

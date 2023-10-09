@@ -247,7 +247,7 @@ const docuSignTabFonts = [
     if (v === undefined) return undefined;
     return v ? 'true' : 'false';
   };
-  
+
   const toIntegerNumberString = (v?: number): string | undefined => {
     if (v === undefined) return undefined;
     return `${Math.round(v)}`;
@@ -293,7 +293,7 @@ export const createDocuSignTab = (s: Signature, options?: DocuSignTabOptions): a
     anchorYOffset: s.anchorYOffset,
     caption: s.caption,
     isSealSignTab: toBooleanString(s.isSealSignTab),
-    optional: toBooleanString(s.optional),
+    optional: toBooleanString(s.required !== true),
     documentId: options?.documentId,
     recipientId: s.recipientId,
     recipientIdGuid: s.recipientIdGuid,
@@ -322,35 +322,53 @@ const addTabToSigner = (signer: any, tab: any) => {
   switch (tab.tabType) {
     case 'signHere':
       if (!signer.tabs.signHereTabs) {
-        signer.signHereTabs = [] as any[]
+        signer.signHereTabs = [tab]
+      } else {
+        signer.signHereTabs.push(tab)
       }
-      signer.signHereTabs.push(tab)
       break;
     case 'initialHere':
       if (!signer.initialHereTabs) {
-        signer.initialHereTabs = [] as any[]
+        signer.initialHereTabs = [tab]
+      } else {
+        signer.initialHereTabs.push(tab)
       }
-      signer.initialHereTabs.push(tab)
       break;
     case 'dateSigned':
       if (!signer.dateSignedTabs) {
-        signer.dateSignedTabs = [] as any[]
+        signer.dateSignedTabs = [tab]
+      } else {
+        signer.dateSignedTabs.push(tab)
       }
-      signer.dateSignedTabs.push(tab)
       break;
     default:
       break;
   }
 }
 
-export const extractSigners = (pdfDoc: Document, options?: DocuSignTabOptions): any[] => {
+export interface ExtractSignersOptions extends DocuSignTabOptions {
+  recipientIds: string[] // Extract for specified recipient ids only
+  fieldNames: string[] // Extract the tabs for specified field names only
+}
+
+export const extractSigners = (pdfDoc: Document, options?: ExtractSignersOptions): any[] => {
   const result = [] as any[]
   const signatureFields = pdfDoc.findElementsByElemType(ElementType.Signature)
   const signers = new Map<string, any>()
   const unknownSigners = new Map<string, any>()
+  const filterByRecipientIds = (options?.recipientIds && options.recipientIds.length > 0)
+  const filterByFieldNames = (options?.fieldNames && options.fieldNames.length > 0)
   if (signatureFields && signatureFields.length > 0) {
     for (const field of signatureFields) {
       const signatureField = field as Signature
+      const recipientId = signatureField.recipientId
+      const fieldName = signatureField.name
+      if (filterByRecipientIds && (!recipientId || !options.recipientIds.includes(recipientId))) {
+        continue;
+      }
+      if (filterByFieldNames && (!fieldName || !options.fieldNames.includes(fieldName))) {
+        continue
+      }
       const tab = createDocuSignTab(signatureField, options)
       if (tab.recipientId) {
         let signer = signers.get(tab.recipientId)

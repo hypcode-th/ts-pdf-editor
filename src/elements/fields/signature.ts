@@ -21,7 +21,6 @@ export interface Signature extends Field {
   isSealSignTab?: boolean;
   recipientId?: string;
   recipientIdGuid?: string;
-  optional?: boolean;
 
   // Scales the size of the tab.
   // This field accepts values from 0.5 to 2.0,
