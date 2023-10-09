@@ -366,6 +366,7 @@ export const extractSigners = (pdfDoc: Document, options?: DocuSignTabOptions): 
         let signer = unknownSigners.get(signatureField.name)
         if (!signer) {
           signer = {
+            name: signatureField.name,
             tabs: [] as any,
           }
           unknownSigners.set(signatureField.name, signer)
