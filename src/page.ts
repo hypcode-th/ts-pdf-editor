@@ -103,6 +103,10 @@ export class Page {
     return this.elements.filter((e) => (e as any).name === name);
   }
 
+  public findElementsByElemType(elemType: string): Element[] {
+    return this.elements.filter((e) => (e as any).elemType === elemType);
+  }
+
   public setFieldValue(fieldName: string, value: any) {
     if (!this.elements || this.elements.length === 0) return;
     for (const elem of this.elements) {
@@ -118,7 +122,7 @@ export class Page {
             (elem as any).selectedOption = value;
             break;
           case ElementType.Signature:
-            (elem as any).anchorString = value;
+            (elem as any).recipientId = value;
             break;
           case ElementType.CheckBox:
             if (typeof value === 'boolean') {

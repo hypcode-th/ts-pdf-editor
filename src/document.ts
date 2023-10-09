@@ -255,4 +255,14 @@ export class Document {
       return prev
     }, [] as Element[])
   }
+
+  public findElementsByElemType(elemType: string): Element[] {
+    return this.pages.reduce<Element[]>((prev: Element[], curr: Page) => {
+      const elems = curr.findElementsByElemType(elemType)
+      if (elems.length > 0) {
+        prev = prev.concat(elems)
+      }
+      return prev
+    }, [] as Element[])
+  }
 }
