@@ -17,4 +17,5 @@ export * from './errors/empty-image-source';
 export * from './errors/unsupport-font';
 export * from './errors/unsupport-mime-type';
 export * from './generator';
+export * from './docusign';
 export * from 'pdf-lib'
