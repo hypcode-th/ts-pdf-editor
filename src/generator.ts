@@ -607,7 +607,6 @@ export class PDFFileGenerator {
     const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
 
-    const h = height ?? 0;
     const value = signature.anchorString ?? signature.id;
     const fz = anchorStringFontSize ?? 2;
     const lh = pdfFont?.heightAtSize(fz) ?? 0;
@@ -615,7 +614,7 @@ export class PDFFileGenerator {
     page.drawText(value, {
       font: pdfFont,
       x: x ? x : undefined,
-      y: y ? y + h - lh : undefined,
+      y: y ? y : undefined,
       maxWidth: width,
       lineHeight: lh > 0 ? lh : height,
       size: anchorStringFontSize ?? 2,
