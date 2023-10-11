@@ -602,7 +602,7 @@ export class PDFFileGenerator {
     const pdfFont = await this.getFont(fontName);
 
     const h = height ?? 0;
-    const value = signature.anchorString ?? signature.name ?? '';
+    const value = signature.anchorString ?? signature.id;
     const fz = anchorStringFontSize ?? 2;
     const lh = pdfFont?.heightAtSize(fz) ?? 0;
 
