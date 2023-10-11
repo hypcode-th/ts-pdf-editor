@@ -300,7 +300,8 @@ export class PDFFileGenerator {
       : ''
       const fontSize = element.fontSize ?? 16
       if (element.fitWidth) {
-        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize)  
+        const borderWidth = (element as any).borderWidth ?? 1
+        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + (2.0 * borderWidth) 
         if (element.alignment === TextAlignment.Center) {
           x = x + ((width - autoWidth) * 0.5)
         } else if (element.alignment === TextAlignment.Right) {
@@ -310,6 +311,11 @@ export class PDFFileGenerator {
       }
       if (element.fitHeight) {
         height = pdfFont.heightAtSize(fontSize, { descender: true })
+        if (height < fontSize) {
+          height = fontSize
+        }
+        const borderWidth = (element as any).borderWidth ?? 1
+        height += (2.0 * borderWidth) 
       }
     }
 
