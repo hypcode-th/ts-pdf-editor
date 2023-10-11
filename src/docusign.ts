@@ -377,23 +377,23 @@ const addTabToSigner = (signer: any, tab: any) => {
   switch (tab.tabType) {
     case 'signHere':
       if (!signer.tabs.signHereTabs) {
-        signer.signHereTabs = [tab];
+        signer.tabs.signHereTabs = [tab];
       } else {
-        signer.signHereTabs.push(tab);
+        signer.tabs.signHereTabs.push(tab);
       }
       break;
     case 'initialHere':
-      if (!signer.initialHereTabs) {
-        signer.initialHereTabs = [tab];
+      if (!signer.tabs.initialHereTabs) {
+        signer.tabs.initialHereTabs = [tab];
       } else {
-        signer.initialHereTabs.push(tab);
+        signer.tabs.initialHereTabs.push(tab);
       }
       break;
     case 'dateSigned':
-      if (!signer.dateSignedTabs) {
-        signer.dateSignedTabs = [tab];
+      if (!signer.tabs.dateSignedTabs) {
+        signer.tabs.dateSignedTabs = [tab];
       } else {
-        signer.dateSignedTabs.push(tab);
+        signer.tabs.dateSignedTabs.push(tab);
       }
       break;
     default:
