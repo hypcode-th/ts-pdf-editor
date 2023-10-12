@@ -1,6 +1,6 @@
 import { Document, IDocument } from './document';
 import { ElementType } from './elements/element';
-import { Signature } from './elements/fields/signature';
+import { DateStampProperties, Signature, Stamp } from './elements/fields/signature';
 
 export type DocuSignFont =
   | 'Default'
@@ -51,6 +51,26 @@ export type DocuSignFontSize =
   | 'Size48'
   | 'Size72';
 
+export interface DocuSignDateStampProperties {
+  dateAreaHeight?: string;
+  dateAreaWidth?: string;
+  dateAreaX?: string;
+  dateAreaY?: string;
+}
+export interface DocuSignStamp {
+  // stamp properties
+  customField?: string;
+  dateStampProperties?: DocuSignDateStampProperties;
+  disallowUserResizeStamp?: 'true' | 'false';
+  externalID?: string;
+  imageBase64?: string;
+  imageType?: 'stamp_image' | 'signature_image' | 'initials_image';
+  phoneticName?: string;
+  signatureName?: string;
+  stampFormat?: 'NameHanko' | 'NameDateHanko';
+  stampImageUri?: string;
+  stampSizeMM?: string;
+}
 export interface DocuSignTab {
   anchorAllowWhiteSpaceInCharacters?: 'true' | 'false'; // true is the default value
   anchorCaseSensitive?: 'true' | 'false'; // false is the default value
@@ -73,6 +93,7 @@ export interface DocuSignTab {
   optional?: 'true' | 'false';
   recipientId?: string;
   scaleValue?: string;
+  stamp?: DocuSignStamp;
   stampType?: 'signature' | 'stamp';
   status?: 'active' | 'signed' | 'declined' | 'na';
   tabGroupLabels?: string[];
@@ -89,13 +110,13 @@ export interface DocuSignTab {
 export interface DocuSignSigner {
   name?: string;
   recipientId?: string;
-  tabs?: DocuSignSignerTabs
+  tabs?: DocuSignSignerTabs;
 }
 
 export interface DocuSignSignerTabs {
-  dateSignedTabs?: DocuSignTab[]
-  initialHereTabs?: DocuSignTab[]
-  signHereTabs?: DocuSignTab[]
+  dateSignedTabs?: DocuSignTab[];
+  initialHereTabs?: DocuSignTab[];
+  signHereTabs?: DocuSignTab[];
 }
 
 export interface CreateDocuSignTabOptions {
@@ -106,7 +127,8 @@ export interface CreateDocuSignTabOptions {
   useElementPosition?: boolean;
 
   // Set width and height of tab with the width and height of the element
-  useElementSize?: boolean;
+  // Not applicable for signHere tab
+  useElementSize?: boolean; 
 
   // DocuSign font to override the PDF element font
   // For tabType = 'dateSigned' only
@@ -135,7 +157,7 @@ export interface CreateDocuSignTabOptions {
   // If the value is 'id' then, the anchorString will be the id of the element (UUID)
   // If the value is 'name', the anchorString will be the name of the element.
   // If the value is undefined, the anchorString remains undefined or empty.
-  autoGenerateAnchorStringWhenEmpty?: 'id' | 'name'
+  autoGenerateAnchorStringWhenEmpty?: 'id' | 'name';
 }
 
 const docuSignTabFonts = [
@@ -310,6 +332,33 @@ const toFloatNumberString = (v?: number, dp?: number): string | undefined => {
   return `${v.toFixed(dp ?? 2)}`;
 };
 
+const createDateStampProperties = (ds?: DateStampProperties): DocuSignDateStampProperties | undefined => {
+  if (!ds || Object.entries(ds).length === 0) return undefined;
+  return {
+    dateAreaHeight: toIntegerNumberString(ds.dateAreaHeight),
+    dateAreaWidth: toIntegerNumberString(ds.dateAreaWidth),
+    dateAreaX: toIntegerNumberString(ds.dateAreaX),
+    dateAreaY: toIntegerNumberString(ds.dateAreaY),
+  };
+};
+
+const createDocuSignStamp = (st?: Stamp): DocuSignStamp | undefined => {
+  if (!st || Object.entries(st).length === 0) return undefined;
+  return {
+    customField: st.customField,
+    dateStampProperties: createDateStampProperties(st.dateStampProperties),
+    disallowUserResizeStamp: toBooleanString(st.disallowUserResizeStamp),
+    externalID: st.externalID,
+    imageBase64: st.imageBase64,
+    imageType: st.imageType,
+    phoneticName: st.phoneticName,
+    signatureName: st.signatureName,
+    stampFormat: st.stampFormat,
+    stampImageUri: st.stampImageUri,
+    stampSizeMM: toIntegerNumberString(st.stampSizeMM)
+  };
+};
+
 export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptions): DocuSignTab => {
   let font = undefined as DocuSignFont | undefined;
   let fontSize = undefined as DocuSignFontSize | undefined;
@@ -348,11 +397,12 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     anchorXOffset: toIntegerNumberString(s.anchorXOffset),
     anchorYOffset: toIntegerNumberString(s.anchorYOffset),
     caption: s.caption,
-    isSealSignTab: toBooleanString(s.isSealSignTab),
+    isSealSignTab: s.tabType === 'signHere' || s.tabType === undefined ? toBooleanString(s.isSealSignTab) : undefined,
     optional: toBooleanString(s.required !== true),
     documentId: options?.documentId,
     recipientId: s.recipientId,
     scaleValue: toFloatNumberString(s.scaleValue, 2),
+    stamp: createDocuSignStamp(s.stamp),
     stampType: s.tabType === 'signHere' || s.tabType === undefined ? s.stampType : undefined,
     status: s.status,
     tabGroupLabels: s.tabGroupLabels,
@@ -361,8 +411,8 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     tabOrder: toIntegerNumberString(s.tabOrder),
     tabType: s.tabType,
     tooltip: s.tooltip,
-    height: options?.useElementSize === true ? toIntegerNumberString(s.height) : undefined,
-    width: options?.useElementSize === true ? toIntegerNumberString(s.width) : undefined,
+    height: options?.useElementSize === true && s.tabType !== 'signHere' ? toIntegerNumberString(s.height) : undefined,
+    width: options?.useElementSize === true && s.tabType !== 'signHere' ? toIntegerNumberString(s.width) : undefined,
     xPosition: options?.useElementPosition === true ? toIntegerNumberString(s.x) : undefined,
     yPosition: options?.useElementPosition === true ? toIntegerNumberString(s.y) : undefined,
     font,

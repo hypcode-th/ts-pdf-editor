@@ -1,5 +1,26 @@
 import { Field } from './field';
 
+export interface DateStampProperties {
+  dateAreaHeight?: number;
+  dateAreaWidth?: number;
+  dateAreaX?: number;
+  dateAreaY?: number;
+}
+export interface Stamp {
+  // stamp properties
+  customField?: string;
+  dateStampProperties?: DateStampProperties; 
+  disallowUserResizeStamp?: boolean;
+  externalID?: string;
+  imageBase64?: string;
+  imageType?: 'stamp_image' | 'signature_image' | 'initials_image'
+  phoneticName?: string;
+  signatureName?: string;
+  stampFormat?: 'NameHanko' | 'NameDateHanko';
+  stampImageUri?: string;
+  stampSizeMM?: number;
+}
+
 export interface Signature extends Field {
   anchorStringFont?: string; // Helvetica is the default font
   anchorStringFontSize?: number; // Default is 2
@@ -29,6 +50,5 @@ export interface Signature extends Field {
   tabOrder?: number;
   tabType?: 'signHere' | 'initialHere' | 'dateSigned';
   tooltip?: string;
+  stamp?: Stamp;
 }
-
-
