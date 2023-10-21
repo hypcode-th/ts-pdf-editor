@@ -381,7 +381,7 @@ export class PDFFileGenerator {
     field.addToPage(button.text, page, options);
 
     if (this.options?.logger?.verbose) {
-      this.options.logger.verbose(`addButton ${JSON.stringify({button, options})}`)
+      this.options.logger.verbose(`addButton ${JSON.stringify({options})}`)
     }
   }
 
@@ -398,7 +398,7 @@ export class PDFFileGenerator {
     field.addToPage(page, options);
 
     if (this.options?.logger?.verbose) {
-      this.options.logger.verbose(`addDropdown ${JSON.stringify({checkBox, options})}`)
+      this.options.logger.verbose(`addDropdown ${JSON.stringify({options})}`)
     }
   }
 
@@ -442,7 +442,7 @@ export class PDFFileGenerator {
     field.addToPage(page, options);
 
     if (this.options?.logger?.verbose) {
-      this.options.logger.verbose(`addDropdown ${JSON.stringify({dropdown, options})}`)
+      this.options.logger.verbose(`addDropdown ${JSON.stringify({options})}`)
     }
   }
 
@@ -477,7 +477,7 @@ export class PDFFileGenerator {
     field.addToPage(page, options);
 
     if (this.options?.logger?.verbose) {
-      this.options.logger.verbose(`addOptionList ${JSON.stringify({optionList, options})}`)
+      this.options.logger.verbose(`addOptionList ${JSON.stringify({options})}`)
     }
   }
 
@@ -544,7 +544,7 @@ export class PDFFileGenerator {
     field.addToPage(page, options);
 
     if (this.options?.logger?.verbose) {
-      this.options.logger.verbose(`addDateInput ${JSON.stringify({dateInput, options})}`)
+      this.options.logger.verbose(`addDateInput ${JSON.stringify({date: dateInput.date, options})}`)
     }
   }
 
@@ -607,7 +607,7 @@ export class PDFFileGenerator {
     field.addToPage(page, options);
 
     if (this.options?.logger?.verbose) {
-      this.options.logger.verbose(`addTextField ${JSON.stringify({textField, options})}`)
+      this.options.logger.verbose(`addTextField ${JSON.stringify({text: textField.text, options})}`)
     }
   }
 
