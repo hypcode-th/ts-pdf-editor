@@ -128,7 +128,7 @@ export interface CreateDocuSignTabOptions {
 
   // Set width and height of tab with the width and height of the element
   // Not applicable for signHere tab
-  useElementSize?: boolean; 
+  useElementSize?: boolean;
 
   // DocuSign font to override the PDF element font
   // For tabType = 'dateSigned' only
@@ -355,7 +355,7 @@ const createDocuSignStamp = (st?: Stamp): DocuSignStamp | undefined => {
     signatureName: st.signatureName,
     stampFormat: st.stampFormat,
     stampImageUri: st.stampImageUri,
-    stampSizeMM: toIntegerNumberString(st.stampSizeMM)
+    stampSizeMM: toIntegerNumberString(st.stampSizeMM),
   };
 };
 

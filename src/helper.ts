@@ -236,10 +236,9 @@ const updateDefaultAppearance = (
   font?: PDFFont,
   fontSize: number = 0,
 ) => {
-  const da = [
-    setFillingColor(color).toString(),
-    setFontAndSize(font?.name ?? 'dummy__noop', fontSize).toString(),
-  ].join('\n');
+  const da = [setFillingColor(color).toString(), setFontAndSize(font?.name ?? 'dummy__noop', fontSize).toString()].join(
+    '\n',
+  );
   field.setDefaultAppearance(da);
 };
 
@@ -276,8 +275,8 @@ export const defaulSignatureAppearanceProvider: AppearanceProviderFor<PDFSignatu
   const bounds = {
     x: borderWidth,
     y: borderWidth,
-    width: width - (borderWidth) * 2,
-    height: height - (borderWidth) * 2,
+    width: width - borderWidth * 2,
+    height: height - borderWidth * 2,
   };
   const layout = layoutSinglelineText('', {
     alignment: TextAlignment.Center,
@@ -384,7 +383,6 @@ function updateWidgetAppearances(
   }
 }
 
-
 export const drawSignature = (options: {
   x: number | PDFNumber;
   y: number | PDFNumber;
@@ -451,11 +449,5 @@ export const drawSignature = (options: {
     endMarkedContent(),
   ];
 
-  return [
-    pushGraphicsState(),
-    ...background,
-    ...clippingArea,
-    ...markedContent,
-    popGraphicsState(),
-  ]  as PDFOperator[];
+  return [pushGraphicsState(), ...background, ...clippingArea, ...markedContent, popGraphicsState()] as PDFOperator[];
 };

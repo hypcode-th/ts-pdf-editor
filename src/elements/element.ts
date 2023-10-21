@@ -1,38 +1,38 @@
-import { BlendMode } from "pdf-lib"
+import { BlendMode } from 'pdf-lib';
 
 export enum ElementType {
-  Text = "text",
-  Image = "image",
-  Rectangle = "rectangle",
-  Square = "square",
-  Circle = "circle",
-  Ellipse = "ellipse",
-  Line = "line",
-  SVGPath = "svgpath",
-  CheckBox = "checkbox",
-  Button = "buton",
-  Dropdown = "dropdown",
-  OptionList = "optionlist",
-  RadioGroup = "radiogroup",
-  RadioOption = "radiooption",
-  TextField = "textfield",
-  Signature = "signature",
-  DateInput = "dateinput",
-};
+  Text = 'text',
+  Image = 'image',
+  Rectangle = 'rectangle',
+  Square = 'square',
+  Circle = 'circle',
+  Ellipse = 'ellipse',
+  Line = 'line',
+  SVGPath = 'svgpath',
+  CheckBox = 'checkbox',
+  Button = 'buton',
+  Dropdown = 'dropdown',
+  OptionList = 'optionlist',
+  RadioGroup = 'radiogroup',
+  RadioOption = 'radiooption',
+  TextField = 'textfield',
+  Signature = 'signature',
+  DateInput = 'dateinput',
+}
 
 export interface Element {
-  elemType: ElementType
+  elemType: ElementType;
 
   // element id for reference
   // if specify, it must be unique e.g. UUID
-  id?: string
+  id?: string;
 
   // origin at bottom-left
-  x?: number; 
-  y?: number; 
+  x?: number;
+  y?: number;
 
   // size
-  width?: number; 
+  width?: number;
   height?: number;
 
   // rotate in degree ccw around x,y
@@ -51,8 +51,8 @@ export interface StyledElement extends Element {
 }
 
 export interface DrawableElement extends Element {
-  blendMode?: BlendMode
-  opacity?: number
+  blendMode?: BlendMode;
+  opacity?: number;
   xSkew?: number; // in degree
   ySkew?: number; // in degree
 }

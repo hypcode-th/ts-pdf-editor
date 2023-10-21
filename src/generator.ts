@@ -34,12 +34,21 @@ import { DateInput } from './elements/fields/dateinput';
 
 import moment from 'moment-timezone';
 
+export interface PDFFileGeneratorLogger {
+  verbose?: (message?: string) => void;
+  warning?: (message?: string) => void;
+  error?: (message?: string) => void;
+}
+
 export interface PDFFileGeneratorOption {
   // mapping between custom font name and the font file path or binary of the font file
   customFontMap?: Map<string, string | Uint8Array | ArrayBuffer>;
 
   // Default font when the font does not exist
   defaultFont?: StandardFonts;
+
+  // Logger
+  logger?: PDFFileGeneratorLogger;
 }
 
 export function filterCharSet(v: string, font: PDFFont) {
@@ -100,19 +109,31 @@ export class PDFFileGenerator {
       // If the page is a reference to the PDF file
       if (page.refFileId) {
         if (page.refPageIndex === undefined) {
+          if (this.options?.logger?.error) {
+            this.options.logger.error(`reference page index is missing`)
+          }
           throw new Error('reference page index is missing');
         }
         if (page.refPageIndex < 0) {
+          if (this.options?.logger?.error) {
+            this.options.logger.error(`reference page index must be greater or equal to zero`)
+          }
           throw new Error('reference page index must be greater or equal to zero');
         }
         const refDoc = fileRefDict.get(page.refFileId);
         if (!refDoc) {
+          if (this.options?.logger?.error) {
+            this.options.logger.error(`a file reference by the page ${pageIndex} is not found`)
+          }
           throw new Error(`a file reference by the page ${pageIndex} is not found`);
         }
         try {
           const copiedPages = await this.pdfDoc.copyPages(refDoc, [page.refPageIndex]);
           pdfPage = this.pdfDoc.addPage(copiedPages[0]);
-        } catch (err) {
+        } catch (err: any) {
+          if (this.options?.logger?.error) {
+            this.options.logger.error(`failed to add a page copied from the referenced PDF document ${page.refPageIndex}, ${err.message}`)
+          }
           throw err;
         }
       } else if (page.pageSize) {
@@ -189,12 +210,12 @@ export class PDFFileGenerator {
       return field.text;
     }
     if (field.style === 'percent_value') {
-      num = num / 100.00
+      num = num / 100.0;
     }
     return num.toLocaleString(field.locale ?? 'en-US', {
       style: field.style === 'percent_value' ? 'percent' : field.style,
-      currency: field.style === 'currency' ? (field.currency ?? 'USD') : undefined,
-      currencyDisplay: field.style === 'currency' ? (field.currencyDisplay ?? 'symbol') : undefined,
+      currency: field.style === 'currency' ? field.currency ?? 'USD' : undefined,
+      currencyDisplay: field.style === 'currency' ? field.currencyDisplay ?? 'symbol' : undefined,
       maximumFractionDigits: field.maximumFractionDigits,
       maximumSignificantDigits: field.maximumSignificantDigits,
       minimumFractionDigits: field.minimumFractionDigits,
@@ -209,7 +230,7 @@ export class PDFFileGenerator {
         ? moment(field.date).tz(field.timezone).format(formatter)
         : moment(field.date).utc().format(formatter);
     }
-    return ''
+    return '';
   }
 
   protected async getFont(fontName: string): Promise<PDFFont> {
@@ -226,6 +247,9 @@ export class PDFFileGenerator {
     }
     if (!font) {
       const defautlFont = this.options?.defaultFont ? this.options.defaultFont : StandardFonts.Helvetica;
+      if (this.options?.logger?.warning) {
+        this.options.logger.warning(`Font ${fontName} is missing, the generator uses the default font ${defautlFont} instead.`)
+      } 
       return await this.getFont(defautlFont);
     }
     this.fontDict.set(fontName, font);
@@ -234,6 +258,9 @@ export class PDFFileGenerator {
 
   protected async getImage(img: Image): Promise<PDFImage> {
     if (!img.src) {
+      if (this.options?.logger?.error) {
+        this.options.logger.error(`the image ${img.id ?? 'n/a'} has no src`)
+      }
       throw new EmptyImageSource();
     }
 
@@ -244,6 +271,9 @@ export class PDFFileGenerator {
       case 'image/png':
         return await this.pdfDoc.embedPng(img.src);
       default:
+        if (this.options?.logger?.error) {
+          this.options.logger.error(`the image ${img.id ?? 'n/a'} has unsupport MIME type`)
+        }
         throw new UnsupportMimeType(img.mimeType);
     }
   }
@@ -285,41 +315,42 @@ export class PDFFileGenerator {
   }
 
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
-    const { y, rotate } = element
+    const { y, rotate } = element;
     let { x, width, height } = element;
     let pdfFont: PDFFont | undefined;
     if (element.font) {
       pdfFont = await this.getFont(element.font);
-    }
+    } 
 
-    if (pdfFont && (element.fitWidth || element.fitHeight)) {
-      const text = (element.elemType === ElementType.DateInput) 
-      ? this.getDateInputDisplayText(element as DateInput)
-      : (element.elemType === ElementType.TextField)
-      ? this.getTextFieldDisplayText(element as TextField)
-      : ''
-      const fontSize = element.fontSize ?? 16
-      if (element.fitWidth) {
-        const borderWidth = (element as any).borderWidth ?? 1
-        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + (2.0 * borderWidth) 
+    if (pdfFont && (element.fitWidth === true || element.fitHeight === true)) {
+      const text =
+        element.elemType === ElementType.DateInput
+          ? this.getDateInputDisplayText(element as DateInput)
+          : element.elemType === ElementType.TextField
+          ? this.getTextFieldDisplayText(element as TextField)
+          : '';
+      const fontSize = element.fontSize ?? 16;
+      if (element.fitWidth === true) {
+        const borderWidth = (element as any).borderWidth ?? 1;
+        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + 2.0 * borderWidth;
         if (element.alignment === TextAlignment.Center) {
-          x = x + ((width - autoWidth) * 0.5)
+          x = x + ((width - autoWidth) * 0.5);
         } else if (element.alignment === TextAlignment.Right) {
-          x = x + (width - autoWidth)
+          x = x + (width - autoWidth);
         }
-        width = autoWidth
+        width = autoWidth;
       }
-      if (element.fitHeight) {
-        height = pdfFont.heightAtSize(fontSize, { descender: true })
+      if (element.fitHeight === true) {
+        height = pdfFont.heightAtSize(fontSize, { descender: true });
         if (height < fontSize) {
-          height = fontSize
+          height = fontSize;
         }
-        const borderWidth = (element as any).borderWidth ?? 1
-        height += (2.0 * borderWidth) 
+        const borderWidth = (element as any).borderWidth ?? 1;
+        height += 2.0 * borderWidth;
       }
     }
 
-    return {
+    const options = {
       x,
       y,
       width,
@@ -332,6 +363,7 @@ export class PDFFileGenerator {
       hidden: element.hidden,
       font: pdfFont,
     } as FieldAppearanceOptions;
+    return options
   }
 
   protected async addButton(page: PDFPage, button: Button): Promise<void> {
@@ -347,6 +379,10 @@ export class PDFFileGenerator {
     await this.updateFontAndSize(field, button);
     const options = await this.createFieldAppearanceOptions(button);
     field.addToPage(button.text, page, options);
+
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`addButton ${JSON.stringify({button, options})}`)
+    }
   }
 
   protected async addCheckBox(page: PDFPage, checkBox: CheckBox): Promise<void> {
@@ -360,6 +396,10 @@ export class PDFFileGenerator {
     }
     const options = await this.createFieldAppearanceOptions(checkBox);
     field.addToPage(page, options);
+
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`addDropdown ${JSON.stringify({checkBox, options})}`)
+    }
   }
 
   protected async addDropdown(page: PDFPage, dropdown: Dropdown): Promise<void> {
@@ -400,6 +440,10 @@ export class PDFFileGenerator {
     await this.updateFontAndSize(field, dropdown);
     const options = await this.createFieldAppearanceOptions(dropdown);
     field.addToPage(page, options);
+
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`addDropdown ${JSON.stringify({dropdown, options})}`)
+    }
   }
 
   protected async addOptionList(page: PDFPage, optionList: OptionList): Promise<void> {
@@ -431,6 +475,10 @@ export class PDFFileGenerator {
     await this.updateFontAndSize(field, optionList);
     const options = await this.createFieldAppearanceOptions(optionList);
     field.addToPage(page, options);
+
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`addOptionList ${JSON.stringify({optionList, options})}`)
+    }
   }
 
   protected async addRadioGroup(page: PDFPage, radioGroup: RadioGroup): Promise<void> {
@@ -485,7 +533,7 @@ export class PDFFileGenerator {
     field.disableSpellChecking();
 
     if (dateInput.date) {
-      field.setText(this.getDateInputDisplayText(dateInput))
+      field.setText(this.getDateInputDisplayText(dateInput));
     }
 
     // IMPORTANT!!!
@@ -494,6 +542,10 @@ export class PDFFileGenerator {
 
     const options = await this.createFieldAppearanceOptions(dateInput);
     field.addToPage(page, options);
+
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`addDateInput ${JSON.stringify({dateInput, options})}`)
+    }
   }
 
   protected async addTextField(page: PDFPage, textField: TextField): Promise<void> {
@@ -543,7 +595,6 @@ export class PDFFileGenerator {
     if (textField.alignment) {
       field.setAlignment(textField.alignment);
     }
-
     if (textField.text) {
       field.setText(this.getTextFieldDisplayText(textField));
     }
@@ -554,10 +605,25 @@ export class PDFFileGenerator {
 
     const options = await this.createFieldAppearanceOptions(textField);
     field.addToPage(page, options);
+
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`addTextField ${JSON.stringify({textField, options})}`)
+    }
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
-    const { backgroundColor, borderColor, borderWidth, anchorStringFont, anchorStringFontSize, x, y, rotate, width, height } = signature;
+    const {
+      backgroundColor,
+      borderColor,
+      borderWidth,
+      anchorStringFont,
+      anchorStringFontSize,
+      x,
+      y,
+      rotate,
+      width,
+      height,
+    } = signature;
 
     // const form = page.doc.getForm();
     // const nameParts = splitFieldName(signature.name);
@@ -592,8 +658,7 @@ export class PDFFileGenerator {
     // usign the same color as the background color of the signature
     // to hide the text but the DocuSign still can map the SignHere tab
     // to it (by anchorString is the name of the signature)
-
-    page.drawRectangle({
+    const backgroundOptions = {
       x,
       y,
       width,
@@ -602,16 +667,16 @@ export class PDFFileGenerator {
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
       borderWidth,
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-    });
+    }
+    page.drawRectangle(backgroundOptions);
 
     const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
     const pdfFont = await this.getFont(fontName);
-
     const value = signature.anchorString ?? signature.id;
     const fz = anchorStringFontSize ?? 2;
     const lh = pdfFont?.heightAtSize(fz) ?? 0;
 
-    page.drawText(value, {
+    const anchorStringOptions = {
       font: pdfFont,
       x: x ? x : undefined,
       y: y ? y : undefined,
@@ -620,8 +685,12 @@ export class PDFFileGenerator {
       size: anchorStringFontSize ?? 2,
       color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
       rotate: rotate ? degrees(rotate) : undefined,
-    });
+    }
+    page.drawText(value, anchorStringOptions);
 
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`addSignature ${JSON.stringify({backgroundOptions, anchorStringOptions, anchorString: value})}`)
+    }
     // As the PDF-LIB does not allow to create the PDFSignature field,
     // therefore, we use the PDFTextField instead
     // const form = page.doc.getForm()
@@ -635,7 +704,7 @@ export class PDFFileGenerator {
     const pdfImg = await this.getImage(img);
     const { x, y, width, height, rotate, xSkew, ySkew, opacity, blendMode } = img;
     if (pdfImg) {
-      page.drawImage(pdfImg, {
+      const options = {
         x,
         y,
         width,
@@ -645,7 +714,11 @@ export class PDFFileGenerator {
         ySkew: ySkew ? degrees(ySkew) : undefined,
         opacity,
         blendMode,
-      });
+      }
+      page.drawImage(pdfImg, options);
+      if (this.options?.logger?.verbose) {
+        this.options.logger.verbose(`drawImage ${JSON.stringify({options})}`)
+      }
     }
   }
 
@@ -670,7 +743,7 @@ export class PDFFileGenerator {
     if (font) {
       pdfFont = await this.getFont(font);
     }
-    page.drawText(value, {
+    const options = {
       font: pdfFont,
       x,
       y,
@@ -684,7 +757,11 @@ export class PDFFileGenerator {
       opacity,
       blendMode,
       wordBreaks,
-    });
+    }
+    page.drawText(value, options);
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`drawText ${JSON.stringify({text: value, options})}`)
+    }
   }
 
   protected async drawCircle(page: PDFPage, circle: Circle): Promise<void> {
@@ -702,7 +779,7 @@ export class PDFFileGenerator {
       x,
       y,
     } = circle;
-    page.drawCircle({
+    const options = {
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
       borderDashArray,
@@ -715,7 +792,11 @@ export class PDFFileGenerator {
       size,
       x,
       y,
-    });
+    }
+    page.drawCircle(options);
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`drawCircle ${JSON.stringify({options})}`)
+    }
   }
 
   protected async drawEllipse(page: PDFPage, ellipse: Ellipse): Promise<void> {
@@ -735,7 +816,7 @@ export class PDFFileGenerator {
       y,
       yScale,
     } = ellipse;
-    page.drawEllipse({
+    const options = {
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
       borderDashArray,
@@ -750,12 +831,16 @@ export class PDFFileGenerator {
       xScale,
       y,
       yScale,
-    });
+    }
+    page.drawEllipse(options);
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`drawEllipse ${JSON.stringify({options})}`)
+    }
   }
 
   protected async drawLine(page: PDFPage, line: Line): Promise<void> {
     const { blendMode, color, dashArray, dashPhase, end, lineCap, opacity, start, thickness } = line;
-    page.drawLine({
+    const options = {
       blendMode,
       color: color ? colorFromHex(color) : undefined,
       dashArray,
@@ -765,7 +850,11 @@ export class PDFFileGenerator {
       opacity,
       start,
       thickness,
-    });
+    }
+    page.drawLine(options);
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`drawLine ${JSON.stringify({options})}`)
+    }
   }
 
   protected async drawRectangle(page: PDFPage, rectangle: DrawablePath): Promise<void> {
@@ -787,7 +876,7 @@ export class PDFFileGenerator {
       y,
       ySkew,
     } = rectangle;
-    page.drawRectangle({
+    const options = {
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
       borderDashArray,
@@ -804,7 +893,11 @@ export class PDFFileGenerator {
       xSkew: xSkew ? degrees(xSkew) : undefined,
       y,
       ySkew: ySkew ? degrees(ySkew) : undefined,
-    });
+    }
+    page.drawRectangle(options);
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`drawRectangle ${JSON.stringify({options})}`)
+    }
   }
 
   protected async drawSquare(page: PDFPage, square: Square): Promise<void> {
@@ -825,7 +918,7 @@ export class PDFFileGenerator {
       y,
       ySkew,
     } = square;
-    page.drawSquare({
+    const options = {
       blendMode,
       borderColor: borderColor ? colorFromHex(borderColor) : undefined,
       borderDashArray,
@@ -841,7 +934,11 @@ export class PDFFileGenerator {
       xSkew: xSkew ? degrees(xSkew) : undefined,
       y,
       ySkew: ySkew ? degrees(ySkew) : undefined,
-    });
+    }
+    page.drawSquare(options);
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`drawSquare ${JSON.stringify({options})}`)
+    }
   }
 
   protected async drawSVGPath(page: PDFPage, svgPath: SVGPath): Promise<void> {
@@ -885,5 +982,8 @@ export class PDFFileGenerator {
     } as PDFPageDrawSVGOptions;
     page.moveTo(0, page.getHeight());
     page.drawSvgPath(svg, options);
+    if (this.options?.logger?.verbose) {
+      this.options.logger.verbose(`drawSVGPath ${JSON.stringify({svg, options})}`)
+    }
   }
 }

@@ -9,11 +9,11 @@ export interface DateStampProperties {
 export interface Stamp {
   // stamp properties
   customField?: string;
-  dateStampProperties?: DateStampProperties; 
+  dateStampProperties?: DateStampProperties;
   disallowUserResizeStamp?: boolean;
   externalID?: string;
   imageBase64?: string;
-  imageType?: 'stamp_image' | 'signature_image' | 'initials_image'
+  imageType?: 'stamp_image' | 'signature_image' | 'initials_image';
   phoneticName?: string;
   signatureName?: string;
   stampFormat?: 'NameHanko' | 'NameDateHanko';

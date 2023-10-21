@@ -1,7 +1,7 @@
-import { DrawableElement } from './element'
+import { DrawableElement } from './element';
 
 export interface Text extends DrawableElement {
-//   options: PDFPageDrawTextOptions
+  //   options: PDFPageDrawTextOptions
   value: string;
   color?: string;
   font?: string;

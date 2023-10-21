@@ -1,9 +1,9 @@
 import { LineCapStyle } from 'pdf-lib';
-import { DrawableElement } from './element'
+import { DrawableElement } from './element';
 
 export interface Point {
-  x: number 
-  y: number
+  x: number;
+  y: number;
 }
 
 export interface DrawablePath extends DrawableElement {

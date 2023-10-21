@@ -1,5 +1,5 @@
-import { Field } from "./field";
+import { Field } from './field';
 
-export interface CheckBox extends Field { 
-  checked: boolean    
+export interface CheckBox extends Field {
+  checked: boolean;
 }

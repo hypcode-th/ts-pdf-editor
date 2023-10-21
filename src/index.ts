@@ -18,4 +18,4 @@ export * from './errors/unsupport-font';
 export * from './errors/unsupport-mime-type';
 export * from './generator';
 export * from './docusign';
-export * from 'pdf-lib'
+export * from 'pdf-lib';
