@@ -301,8 +301,9 @@ export class PDFFileGenerator {
           : '';
       const fontSize = element.fontSize ?? 16;
       if (element.fitWidth === true) {
+        const woffset = 4
         const borderWidth = (element as any).borderWidth ?? 1;
-        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + 2.0 * borderWidth;
+        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + (2.0 * (borderWidth + woffset));
         if (element.alignment === TextAlignment.Center) {
           x = x + (width - autoWidth) * 0.5;
         } else if (element.alignment === TextAlignment.Right) {
@@ -311,12 +312,13 @@ export class PDFFileGenerator {
         width = autoWidth;
       }
       if (element.fitHeight === true) {
+        const hoffset = 2
         height = pdfFont.heightAtSize(fontSize, { descender: true });
         if (height < fontSize) {
           height = fontSize;
         }
         const borderWidth = (element as any).borderWidth ?? 1;
-        height += 2.0 * borderWidth;
+        height += 2.0 * (borderWidth + hoffset);
       }
     }
 
