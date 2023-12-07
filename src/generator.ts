@@ -479,7 +479,7 @@ export class PDFFileGenerator {
     if (dateInput.maxLength) {
       field.setMaxLength(dateInput.maxLength);
     }
-    if (dateInput.alignment) {
+    if (dateInput.alignment !== undefined) {
       field.setAlignment(dateInput.alignment);
     }
 
@@ -544,7 +544,7 @@ export class PDFFileGenerator {
     if (textField.maxLength) {
       field.setMaxLength(textField.maxLength);
     }
-    if (textField.alignment) {
+    if (textField.alignment !== undefined) {
       field.setAlignment(textField.alignment);
     }
     if (textField.text) {
