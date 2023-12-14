@@ -386,6 +386,10 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     bold = options?.bold !== undefined ? options.bold : isBoldFont(s.font);
     italic = options?.italic !== undefined ? options.italic : isItalicFont(s.font);
   }
+
+  // Fix problem on DocuSign API when optional is false
+  const optional = s.required !== true ? true : undefined;
+
   return {
     anchorAllowWhiteSpaceInCharacters: toBooleanString(s.anchorAllowWhiteSpaceInCharacters === false),
     anchorCaseSensitive: toBooleanString(s.anchorCaseSensitive),
@@ -398,7 +402,7 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     anchorYOffset: toIntegerNumberString(s.anchorYOffset),
     caption: s.caption,
     isSealSignTab: s.tabType === 'signHere' || s.tabType === undefined ? toBooleanString(s.isSealSignTab) : undefined,
-    optional: toBooleanString(s.required !== true),
+    optional: toBooleanString(optional),
     documentId: options?.documentId,
     recipientId: s.recipientId,
     scaleValue: toFloatNumberString(s.scaleValue, 2),
