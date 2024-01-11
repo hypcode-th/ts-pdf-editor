@@ -599,7 +599,7 @@ export class PDFFileGenerator {
     field.disableSpellChecking();
 
     const text = signature.anchorString ?? signature.id;
-    if (signature.anchorString) {
+    if (text) {
       field.setText(text);
     }
 
