@@ -51,4 +51,7 @@ export interface Signature extends Field {
   tabType?: 'signHere' | 'initialHere' | 'dateSigned';
   tooltip?: string;
   stamp?: Stamp;
+
+  // option to create as text field
+  textFieldMode?: boolean;
 }

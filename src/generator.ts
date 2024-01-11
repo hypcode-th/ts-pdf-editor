@@ -617,76 +617,78 @@ export class PDFFileGenerator {
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
-    const form = page.doc.getForm();
-    const field = form.createTextField(signature.name);
-    this.updatePDFField(field, signature);
+    if (signature.textFieldMode === true) {
+      const form = page.doc.getForm();
+      const field = form.createTextField(signature.name);
+      this.updatePDFField(field, signature);
 
-    field.enableReadOnly();
-    field.disableFileSelection();
-    field.disableMultiline();
-    field.disablePassword();
-    field.disableRichFormatting();
-    field.disableScrolling();
-    field.disableSpellChecking();
+      field.enableReadOnly();
+      field.disableFileSelection();
+      field.disableMultiline();
+      field.disablePassword();
+      field.disableRichFormatting();
+      field.disableScrolling();
+      field.disableSpellChecking();
 
-    const text = signature.anchorString ?? signature.id;
-    if (text) {
-      field.setText(text);
+      const text = signature.anchorString ?? signature.id;
+      if (text) {
+        field.setText(text);
+      }
+
+      // IMPORTANT!!!
+      // Text must be set before updateFontAndSize
+      await this.updateSignatureFontAndSize(field, signature);
+
+      const options = await this.createSignatureAppearanceOptions(signature);
+      field.addToPage(page, options);
+    } else {
+      // To use with DocuSign SignHere tabs,
+      // we will create draw a signature name as text on the widget
+      // usign the same color as the background color of the signature
+      // to hide the text but the DocuSign still can map the SignHere tab
+      // to it (by anchorString is the name of the signature)
+      const {
+        backgroundColor,
+        borderColor,
+        borderWidth,
+        anchorStringFont,
+        anchorStringFontSize,
+        x,
+        y,
+        rotate,
+        width,
+        height,
+      } = signature;
+      const backgroundOptions = {
+        x,
+        y,
+        width,
+        height,
+        rotate: rotate ? degrees(rotate) : undefined,
+        borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+        borderWidth,
+        color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+      };
+      page.drawRectangle(backgroundOptions);
+
+      const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
+      const pdfFont = await this.getFont(fontName);
+      const value = signature.anchorString ?? signature.id;
+      const fz = anchorStringFontSize ?? 2;
+      const lh = pdfFont?.heightAtSize(fz) ?? 0;
+
+      const anchorStringOptions = {
+        font: pdfFont,
+        x: x ? x : undefined,
+        y: y ? y : undefined,
+        maxWidth: width,
+        lineHeight: lh > 0 ? lh : height,
+        size: anchorStringFontSize ?? 2,
+        color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+        rotate: rotate ? degrees(rotate) : undefined,
+      };
+      page.drawText(value, anchorStringOptions);
     }
-
-    // IMPORTANT!!!
-    // Text must be set before updateFontAndSize
-    await this.updateSignatureFontAndSize(field, signature);
-
-    const options = await this.createSignatureAppearanceOptions(signature);
-    field.addToPage(page, options);
-
-    // To use with DocuSign SignHere tabs,
-    // we will create draw a signature name as text on the widget
-    // usign the same color as the background color of the signature
-    // to hide the text but the DocuSign still can map the SignHere tab
-    // to it (by anchorString is the name of the signature)
-    // const {
-    //   backgroundColor,
-    //   borderColor,
-    //   borderWidth,
-    //   anchorStringFont,
-    //   anchorStringFontSize,
-    //   x,
-    //   y,
-    //   rotate,
-    //   width,
-    //   height,
-    // } = signature;
-    // const backgroundOptions = {
-    //   x,
-    //   y,
-    //   width,
-    //   height,
-    //   rotate: rotate ? degrees(rotate) : undefined,
-    //   borderColor: borderColor ? colorFromHex(borderColor) : undefined,
-    //   borderWidth,
-    //   color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-    // };
-    // page.drawRectangle(backgroundOptions);
-
-    // const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
-    // const pdfFont = await this.getFont(fontName);
-    // const value = signature.anchorString ?? signature.id;
-    // const fz = anchorStringFontSize ?? 2;
-    // const lh = pdfFont?.heightAtSize(fz) ?? 0;
-
-    // const anchorStringOptions = {
-    //   font: pdfFont,
-    //   x: x ? x : undefined,
-    //   y: y ? y : undefined,
-    //   maxWidth: width,
-    //   lineHeight: lh > 0 ? lh : height,
-    //   size: anchorStringFontSize ?? 2,
-    //   color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-    //   rotate: rotate ? degrees(rotate) : undefined,
-    // };
-    // page.drawText(value, anchorStringOptions);
   }
 
   protected async drawImage(page: PDFPage, img: Image): Promise<void> {
