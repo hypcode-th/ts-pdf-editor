@@ -285,12 +285,8 @@ export class PDFFileGenerator {
   }
 
   protected async updateSignatureFontAndSize(pdfField: PDFField, field: Signature): Promise<PDFFont> {
-    const fontName = field.anchorStringFont
-      ? field.anchorStringFont
-      : StandardFonts.Helvetica;
-    const fontSize = field.anchorStringFontSize 
-      ? field.anchorStringFontSize 
-      : 2;
+    const fontName = field.anchorStringFont ? field.anchorStringFont : StandardFonts.Helvetica;
+    const fontSize = field.anchorStringFontSize ? field.anchorStringFontSize : 2;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
       if (typeof (pdfField as any).updateAppearances === 'function') {
@@ -349,8 +345,47 @@ export class PDFFileGenerator {
       y,
       width,
       height,
-      rotate: degrees(rotate),
+      rotate: rotate ? degrees(rotate) : undefined,
       textColor: element.textColor ? colorFromHex(element.textColor) : undefined,
+      backgroundColor: element.backgroundColor ? colorFromHex(element.backgroundColor) : undefined,
+      borderColor: element.borderColor ? colorFromHex(element.borderColor) : undefined,
+      borderWidth: element.borderWidth,
+      hidden: element.hidden,
+      font: pdfFont,
+    } as FieldAppearanceOptions;
+    return options;
+  }
+
+  protected async createSignatureAppearanceOptions(element: Signature): Promise<FieldAppearanceOptions> {
+    const { y, rotate } = element;
+    let { x, width, height } = element;
+    let pdfFont: PDFFont | undefined;
+    const font = element.anchorStringFont ?? StandardFonts.Helvetica;
+    if (font) {
+      pdfFont = await this.getFont(font);
+    }
+
+    if (pdfFont) {
+      const text =
+        element.elemType === ElementType.DateInput
+          ? this.getDateInputDisplayText(element as DateInput)
+          : element.elemType === ElementType.TextField
+          ? this.getTextFieldDisplayText(element as TextField)
+          : '';
+      const fontSize = element.anchorStringFontSize ?? 2;
+      const woffset = 4;
+      const borderWidth = (element as any).borderWidth ?? 1;
+      const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + 2.0 * (borderWidth + woffset);
+      width = autoWidth;
+    }
+
+    const options = {
+      x,
+      y,
+      width,
+      height,
+      rotate: rotate ? degrees(rotate) : undefined,
+      textColor: element.backgroundColor ? colorFromHex(element.backgroundColor) : undefined,
       backgroundColor: element.backgroundColor ? colorFromHex(element.backgroundColor) : undefined,
       borderColor: element.borderColor ? colorFromHex(element.borderColor) : undefined,
       borderWidth: element.borderWidth,
@@ -585,7 +620,7 @@ export class PDFFileGenerator {
     const form = page.doc.getForm();
     const field = form.createTextField(signature.name);
     this.updatePDFField(field, signature);
-    
+
     field.enableReadOnly();
     field.disableFileSelection();
     field.disableMultiline();
@@ -603,10 +638,7 @@ export class PDFFileGenerator {
     // Text must be set before updateFontAndSize
     await this.updateSignatureFontAndSize(field, signature);
 
-    const data = {...signature}
-    data.textColor = signature.backgroundColor
-
-    const options = await this.createFieldAppearanceOptions(data);
+    const options = await this.createSignatureAppearanceOptions(signature);
     field.addToPage(page, options);
 
     // To use with DocuSign SignHere tabs,
