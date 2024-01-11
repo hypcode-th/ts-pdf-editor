@@ -357,8 +357,8 @@ export class PDFFileGenerator {
   }
 
   protected async createSignatureAppearanceOptions(element: Signature): Promise<FieldAppearanceOptions> {
-    const { y, rotate } = element;
-    let { x, width, height } = element;
+    const { x, y, rotate, height } = element;
+    let { width } = element;
     let pdfFont: PDFFont | undefined;
     const font = element.anchorStringFont ?? StandardFonts.Helvetica;
     if (font) {
