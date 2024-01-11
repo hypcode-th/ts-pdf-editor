@@ -294,7 +294,7 @@ export class PDFFileGenerator {
       ? field.anchorStringFontSize 
       : field.fontSize 
       ? field.fontSize 
-      : 16;
+      : 2;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
       if (typeof (pdfField as any).updateAppearances === 'function') {
