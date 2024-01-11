@@ -284,6 +284,32 @@ export class PDFFileGenerator {
     return pdfFont;
   }
 
+  protected async updateSignatureFontAndSize(pdfField: PDFField, field: Signature): Promise<PDFFont> {
+    const fontName = field.anchorStringFont
+      ? field.anchorStringFont
+      : field.font
+      ? field.font
+      : StandardFonts.Helvetica;
+    const fontSize = field.anchorStringFontSize 
+      ? field.anchorStringFontSize 
+      : field.fontSize 
+      ? field.fontSize 
+      : 16;
+    const pdfFont = await this.getFont(fontName);
+    if (pdfFont) {
+      if (typeof (pdfField as any).updateAppearances === 'function') {
+        (pdfField as any).updateAppearances(pdfFont);
+      } else {
+        pdfField.defaultUpdateAppearances(pdfFont);
+      }
+    }
+    const da = pdfField.acroField.getDefaultAppearance() ?? '';
+    const newDa = da + '\n' + setFontAndSize(fontName, fontSize).toString();
+    pdfField.acroField.setDefaultAppearance(newDa);
+
+    return pdfFont;
+  }
+
   protected async createFieldAppearanceOptions(element: any): Promise<FieldAppearanceOptions> {
     const { y, rotate } = element;
     let { x, width, height } = element;
@@ -301,9 +327,9 @@ export class PDFFileGenerator {
           : '';
       const fontSize = element.fontSize ?? 16;
       if (element.fitWidth === true) {
-        const woffset = 4
+        const woffset = 4;
         const borderWidth = (element as any).borderWidth ?? 1;
-        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + (2.0 * (borderWidth + woffset));
+        const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + 2.0 * (borderWidth + woffset);
         if (element.alignment === TextAlignment.Center) {
           x = x + (width - autoWidth) * 0.5;
         } else if (element.alignment === TextAlignment.Right) {
@@ -312,7 +338,7 @@ export class PDFFileGenerator {
         width = autoWidth;
       }
       if (element.fitHeight === true) {
-        const hoffset = 2
+        const hoffset = 2;
         height = pdfFont.heightAtSize(fontSize, { descender: true });
         if (height < fontSize) {
           height = fontSize;
@@ -560,88 +586,76 @@ export class PDFFileGenerator {
   }
 
   protected async addSignature(page: PDFPage, signature: Signature): Promise<void> {
-    const {
-      backgroundColor,
-      borderColor,
-      borderWidth,
-      anchorStringFont,
-      anchorStringFontSize,
-      x,
-      y,
-      rotate,
-      width,
-      height,
-    } = signature;
+    const form = page.doc.getForm();
+    const field = form.createTextField(signature.name);
+    this.updatePDFField(field, signature);
+    
+    field.enableReadOnly();
+    field.disableFileSelection();
+    field.disableMultiline();
+    field.disablePassword();
+    field.disableRichFormatting();
+    field.disableScrolling();
+    field.disableSpellChecking();
 
-    // const form = page.doc.getForm();
-    // const nameParts = splitFieldName(signature.name);
-    // const parent = findOrCreateNonTerminals(form, nameParts.nonTerminal);
-    // const dict = form.doc.context.obj({
-    //   FT: 'Sig',
-    //   Kids: [],
-    // });
-    // const ref = form.doc.context.register(dict);
-    // form.acroForm.addField(ref);
-    // const sig = PDFAcroSignature.fromDict(dict, ref);
-    // sig.setPartialName(nameParts.terminal);
-    // addFieldToParent(parent, [sig, sig.ref], nameParts.terminal);
-    // const field = PDFSignature.of(sig, sig.ref, form.doc);
-    // this.updatePDFField(field, signature);
-    // const options = await this.createFieldAppearanceOptions(signature);
-    // const widget = createWidget(page, sig, form.doc.context, ref, options);
-    // const widgetRef = form.doc.context.register(widget.dict);
+    const text = signature.anchorString ?? signature.id;
+    if (signature.anchorString) {
+      field.setText(text);
+    }
 
-    // Add widget to this field
-    // sig.addWidget(widgetRef);
+    // IMPORTANT!!!
+    // Text must be set before updateFontAndSize
+    await this.updateSignatureFontAndSize(field, signature);
 
-    // Set appearance streams for widget
-    // const fieldFont = options.font ?? form.getDefaultFont();
-    // updateSignatureWidgetAppearance(field, widget, fieldFont);
-
-    // Add widget to the given page
-    // page.node.addAnnot(widgetRef);
+    const options = await this.createFieldAppearanceOptions(signature);
+    field.addToPage(page, options);
 
     // To use with DocuSign SignHere tabs,
     // we will create draw a signature name as text on the widget
     // usign the same color as the background color of the signature
     // to hide the text but the DocuSign still can map the SignHere tab
     // to it (by anchorString is the name of the signature)
-    const backgroundOptions = {
-      x,
-      y,
-      width,
-      height,
-      rotate: rotate ? degrees(rotate) : undefined,
-      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
-      borderWidth,
-      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-    };
-    page.drawRectangle(backgroundOptions);
+    // const {
+    //   backgroundColor,
+    //   borderColor,
+    //   borderWidth,
+    //   anchorStringFont,
+    //   anchorStringFontSize,
+    //   x,
+    //   y,
+    //   rotate,
+    //   width,
+    //   height,
+    // } = signature;
+    // const backgroundOptions = {
+    //   x,
+    //   y,
+    //   width,
+    //   height,
+    //   rotate: rotate ? degrees(rotate) : undefined,
+    //   borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+    //   borderWidth,
+    //   color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+    // };
+    // page.drawRectangle(backgroundOptions);
 
-    const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
-    const pdfFont = await this.getFont(fontName);
-    const value = signature.anchorString ?? signature.id;
-    const fz = anchorStringFontSize ?? 2;
-    const lh = pdfFont?.heightAtSize(fz) ?? 0;
+    // const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
+    // const pdfFont = await this.getFont(fontName);
+    // const value = signature.anchorString ?? signature.id;
+    // const fz = anchorStringFontSize ?? 2;
+    // const lh = pdfFont?.heightAtSize(fz) ?? 0;
 
-    const anchorStringOptions = {
-      font: pdfFont,
-      x: x ? x : undefined,
-      y: y ? y : undefined,
-      maxWidth: width,
-      lineHeight: lh > 0 ? lh : height,
-      size: anchorStringFontSize ?? 2,
-      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-      rotate: rotate ? degrees(rotate) : undefined,
-    };
-    page.drawText(value, anchorStringOptions);
-    // As the PDF-LIB does not allow to create the PDFSignature field,
-    // therefore, we use the PDFTextField instead
-    // const form = page.doc.getForm()
-    // const field = form.createTextField(signature.name)
-    // this.updatePDFField(field, signature)
-    // const options = await this.createFieldAppearanceOptions(signature)
-    // field.addToPage(page, options)
+    // const anchorStringOptions = {
+    //   font: pdfFont,
+    //   x: x ? x : undefined,
+    //   y: y ? y : undefined,
+    //   maxWidth: width,
+    //   lineHeight: lh > 0 ? lh : height,
+    //   size: anchorStringFontSize ?? 2,
+    //   color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+    //   rotate: rotate ? degrees(rotate) : undefined,
+    // };
+    // page.drawText(value, anchorStringOptions);
   }
 
   protected async drawImage(page: PDFPage, img: Image): Promise<void> {
@@ -699,7 +713,7 @@ export class PDFFileGenerator {
       blendMode,
       wordBreaks,
     };
-    page.drawText(value, options);    
+    page.drawText(value, options);
   }
 
   protected async drawCircle(page: PDFPage, circle: Circle): Promise<void> {
