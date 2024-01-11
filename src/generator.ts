@@ -287,13 +287,9 @@ export class PDFFileGenerator {
   protected async updateSignatureFontAndSize(pdfField: PDFField, field: Signature): Promise<PDFFont> {
     const fontName = field.anchorStringFont
       ? field.anchorStringFont
-      : field.font
-      ? field.font
       : StandardFonts.Helvetica;
     const fontSize = field.anchorStringFontSize 
       ? field.anchorStringFontSize 
-      : field.fontSize 
-      ? field.fontSize 
       : 2;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
@@ -607,7 +603,10 @@ export class PDFFileGenerator {
     // Text must be set before updateFontAndSize
     await this.updateSignatureFontAndSize(field, signature);
 
-    const options = await this.createFieldAppearanceOptions(signature);
+    const data = {...signature}
+    data.textColor = signature.backgroundColor
+
+    const options = await this.createFieldAppearanceOptions(data);
     field.addToPage(page, options);
 
     // To use with DocuSign SignHere tabs,
