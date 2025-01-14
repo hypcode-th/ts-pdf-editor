@@ -100,7 +100,7 @@ export interface DocuSignTab {
   tabId?: string;
   tabLabel?: string;
   tabOrder?: string;
-  tabType?: 'signHere' | 'initialHere' | 'dateSigned';
+  tabType?: 'signHere' | 'initialHere' | 'dateSigned' | 'fullName' | 'firstName' | 'lastName' | 'emailAddress';
   tooltip?: string;
   width?: string;
   xPosition?: string;
@@ -365,7 +365,13 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
   let fontColor = undefined as DocuSignFontColor | undefined;
   let bold = undefined as boolean | undefined;
   let italic = undefined as boolean | undefined;
-  if (s.tabType === 'dateSigned') {
+  if (
+    s.tabType === 'dateSigned' ||
+    s.tabType === 'fullName' ||
+    s.tabType === 'firstName' ||
+    s.tabType === 'lastName' ||
+    s.tabType === 'emailAddress'
+  ) {
     font = options?.font ?? fontToDocuSignTabFont(s.font);
     fontSize = options?.fontSize ?? fontSizeToDocuSignTabFontSize(s.fontSize);
     if (options?.fontColor) {
