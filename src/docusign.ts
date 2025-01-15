@@ -100,7 +100,23 @@ export interface DocuSignTab {
   tabId?: string;
   tabLabel?: string;
   tabOrder?: string;
-  tabType?: 'signHere' | 'initialHere' | 'dateSigned' | 'fullName' | 'firstName' | 'lastName' | 'emailAddress';
+  tabType?:
+    | 'signHere'
+    | 'initialHere'
+    | 'dateSigned'
+    | 'fullName'
+    | 'firstName'
+    | 'lastName'
+    | 'emailAddress'
+    | 'phoneNumber'
+    | 'approve'
+    | 'checkbox'
+    | 'radioGroup'
+    | 'company'
+    | 'text'
+    | 'title'
+    | 'number'
+    | 'numerical';
   tooltip?: string;
   width?: string;
   xPosition?: string;
@@ -370,7 +386,13 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     s.tabType === 'fullName' ||
     s.tabType === 'firstName' ||
     s.tabType === 'lastName' ||
-    s.tabType === 'emailAddress'
+    s.tabType === 'emailAddress' ||
+    s.tabType === 'phoneNumber' ||
+    s.tabType === 'company' ||
+    s.tabType === 'text' ||
+    s.tabType === 'title' ||
+    s.tabType === 'number' ||
+    s.tabType === 'numerical' 
   ) {
     font = options?.font ?? fontToDocuSignTabFont(s.font);
     fontSize = options?.fontSize ?? fontSizeToDocuSignTabFontSize(s.fontSize);
@@ -454,6 +476,97 @@ const addTabToSigner = (signer: any, tab: any) => {
         signer.tabs.dateSignedTabs = [tab];
       } else {
         signer.tabs.dateSignedTabs.push(tab);
+      }
+      break;
+    case 'fullName':
+      if (!signer.tabs.fullNameTabs) {
+        signer.tabs.fullNameTabs = [tab];
+      } else {
+        signer.tabs.fullNameTabs.push(tab);
+      }
+      break;
+    case 'firstName':
+      if (!signer.tabs.firstNameTabs) {
+        signer.tabs.firstNameTabs = [tab];
+      } else {
+        signer.tabs.firstNameTabs.push(tab);
+      }
+      break;
+    case 'lastName':
+      if (!signer.tabs.lastNameTabs) {
+        signer.tabs.lastNameTabs = [tab];
+      } else {
+        signer.tabs.lastNameTabs.push(tab);
+      }
+      break;
+    case 'emailAddress':
+      if (!signer.tabs.emailAddressTabs) {
+        signer.tabs.emailAddressTabs = [tab];
+      } else {
+        signer.tabs.emailAddressTabs.push(tab);
+      }
+      break;
+    case 'phoneNumber':
+      if (!signer.tabs.phoneNumberTabs) {
+        signer.tabs.phoneNumberTabs = [tab];
+      } else {
+        signer.tabs.phoneNumberTabs.push(tab);
+      }
+      break;
+    case 'approve':
+      if (!signer.tabs.approveTabs) {
+        signer.tabs.approveTabs = [tab];
+      } else {
+        signer.tabs.approveTabs.push(tab);
+      }
+      break;
+    case 'checkbox':
+      if (!signer.tabs.checkboxTabs) {
+        signer.tabs.checkboxTabs = [tab];
+      } else {
+        signer.tabs.checkboxTabs.push(tab);
+      }
+      break;
+    case 'radioGroup':
+      if (!signer.tabs.radioGroupTabs) {
+        signer.tabs.radioGroupTabs = [tab];
+      } else {
+        signer.tabs.radioGroupTabs.push(tab);
+      }
+      break;
+    case 'company':
+      if (!signer.tabs.companyTabs) {
+        signer.tabs.companyTabs = [tab];
+      } else {
+        signer.tabs.companyTabs.push(tab);
+      }
+      break;
+    case 'text':
+      if (!signer.tabs.textTabs) {
+        signer.tabs.textTabs = [tab];
+      } else {
+        signer.tabs.textTabs.push(tab);
+      }
+      break;
+    case 'title':
+      if (!signer.tabs.titleTabs) {
+        signer.tabs.titleTabs = [tab];
+      } else {
+        signer.tabs.titleTabs.push(tab);
+      }
+      break;
+    case 'number':
+      if (!signer.tabs.numberTabs) {
+        signer.tabs.numberTabs = [tab];
+      } else {
+        signer.tabs.numberTabs.push(tab);
+      }
+      break;
+    case 'numerical':
+      if (!signer.tabs.numericalTabs) {
+        signer.tabs.numericalTabs = [tab];
+      } else {
+        signer.tabs.numericalTabs.push(tab);
       }
       break;
     default:

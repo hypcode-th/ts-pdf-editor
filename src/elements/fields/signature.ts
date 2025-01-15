@@ -48,7 +48,23 @@ export interface Signature extends Field {
   tabId?: string;
   tabLabel?: string;
   tabOrder?: number;
-  tabType?: 'signHere' | 'initialHere' | 'dateSigned' | 'fullName' | 'firstName' | 'lastName' | 'emailAddress';
+  tabType?:
+    | 'signHere'
+    | 'initialHere'
+    | 'dateSigned'
+    | 'fullName'
+    | 'firstName'
+    | 'lastName'
+    | 'emailAddress'
+    | 'phoneNumber'
+    | 'approve'
+    | 'checkbox'
+    | 'radioGroup'
+    | 'company'
+    | 'text'
+    | 'title'
+    | 'number'
+    | 'numerical';
   tooltip?: string;
   stamp?: Stamp;
 
