@@ -106,6 +106,7 @@ export interface DocuSignTab {
     | 'signHere'
     | 'initialHere'
     | 'dateSigned'
+    | 'date'
     | 'fullName'
     | 'firstName'
     | 'lastName'
@@ -132,9 +133,37 @@ export interface DocuSignSigner {
 }
 
 export interface DocuSignSignerTabs {
+  approveTabs?: DocuSignTab[];
+  checkboxTabs?: DocuSignTab[];
+  companyTabs?: DocuSignTab[];
   dateSignedTabs?: DocuSignTab[];
+  dateTabs?: DocuSignTab[];
+  declineTabs?: DocuSignTab[];
+  drawTabs?: DocuSignTab[];
+  emailAddressTabs?: DocuSignTab[];
+  emailTabs?: DocuSignTab[];
+  envelopIdTabs?: DocuSignTab[];
+  firstNameTabs?: DocuSignTab[];
+  formulaTabs?: DocuSignTab[];
+  fullNameTabs?: DocuSignTab[];
   initialHereTabs?: DocuSignTab[];
+  lastNameTabs?: DocuSignTab[];
+  listTabs?: DocuSignTab[];
+  notarizeTabs?: DocuSignTab[];
+  notarySealTabs?: DocuSignTab[];
+  noteTabs?: DocuSignTab[];
+  numberTabs?: DocuSignTab[];
+  numericalTabs?: DocuSignTab[];
+  phoneNumberTabs?: DocuSignTab[];
+  radioGroupTabs?: DocuSignTab[];
+  signerAttachmentTabs?: DocuSignTab[];
   signHereTabs?: DocuSignTab[];
+  smartSectionTabs?: DocuSignTab[];
+  ssnTabs?: DocuSignTab[];
+  textTabs?: DocuSignTab[];
+  titleTabs?: DocuSignTab[];
+  viewTabs?: DocuSignTab[];
+  zipTabs?: DocuSignTab[];
 }
 
 export interface CreateDocuSignTabOptions {
@@ -415,7 +444,10 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
     tab.tabType === 'text' ||
     tab.tabType === 'title' ||
     tab.tabType === 'number' ||
-    tab.tabType === 'numerical'
+    tab.tabType === 'numerical' ||
+    tab.tabType === 'date' ||
+    tab.tabType === 'checkbox' ||
+    tab.tabType === 'radioGroup'
   ) {
     font = options?.font ?? fontToDocuSignTabFont(s.font);
     fontSize = options?.fontSize ?? fontSizeToDocuSignTabFontSize(s.fontSize);
@@ -501,6 +533,13 @@ const addTabToSigner = (signer: any, tab: any) => {
         signer.tabs.dateSignedTabs = [tab];
       } else {
         signer.tabs.dateSignedTabs.push(tab);
+      }
+      break;
+    case 'date':
+      if (!signer.tabs.dateTabs) {
+        signer.tabs.dateTabs = [tab];
+      } else {
+        signer.tabs.dateTabs.push(tab);
       }
       break;
     case 'fullName':
@@ -606,13 +645,13 @@ export interface ExtractSignersOptions extends CreateDocuSignTabOptions {
 
 export const extractSigners = (pdfDoc: Document, options?: ExtractSignersOptions): DocuSignSigner[] => {
   const result = [] as DocuSignSigner[];
-  const signatureFields = pdfDoc.findElementsByElemType(ElementType.Signature);
+  const docusignTabFields = pdfDoc.findElementsWithDocuSignTab();
   const signers = new Map<string, DocuSignSigner>();
   const unknownSigners = new Map<string, DocuSignSigner>();
   const filterByRecipientIds = options?.recipientIds && options.recipientIds.length > 0;
   const filterByFieldNames = options?.fieldNames && options.fieldNames.length > 0;
-  if (signatureFields && signatureFields.length > 0) {
-    for (const field of signatureFields) {
+  if (docusignTabFields && docusignTabFields.length > 0) {
+    for (const field of docusignTabFields) {
       const signatureField = field as Signature;
       const tabData = getTabFromElement(signatureField);
       const recipientId = tabData?.recipientId;

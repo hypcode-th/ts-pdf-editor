@@ -277,4 +277,14 @@ export class Document {
       return prev;
     }, [] as Element[]);
   }
+
+  public findElementsWithDocuSignTab(): Element[] {
+    return this.pages.reduce<Element[]>((prev: Element[], curr: Page) => {
+      const elems = curr.findElementsWithDocuSignTab();
+      if (elems.length > 0) {
+        prev = prev.concat(elems);
+      }
+      return prev;
+    }, [] as Element[]);
+  }
 }

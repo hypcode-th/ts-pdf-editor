@@ -107,6 +107,10 @@ export class Page {
     return this.elements.filter((e) => (e as any).elemType === elemType);
   }
 
+  public findElementsWithDocuSignTab(): Element[] {
+    return this.elements.filter((e) => ((e as any).tab || (e as any).elemType === ElementType.Signature));
+  }
+
   public setFieldValue(fieldName: string, value: any) {
     if (!this.elements || this.elements.length === 0) return;
     for (const elem of this.elements) {
