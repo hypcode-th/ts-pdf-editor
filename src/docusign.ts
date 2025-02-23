@@ -1,6 +1,8 @@
 import { Document, IDocument } from './document';
 import { ElementType } from './elements/element';
-import { DateStampProperties, Signature, Stamp } from './elements/fields/signature';
+import { Signature } from './elements/fields/signature';
+import { DateStampProperties, Stamp, DocuSignTabData } from './elements/fields/docusign';
+import { Field } from './elements/fields/field';
 
 export type DocuSignFont =
   | 'Default'
@@ -375,24 +377,45 @@ const createDocuSignStamp = (st?: Stamp): DocuSignStamp | undefined => {
   };
 };
 
-export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptions): DocuSignTab => {
+export const getTabFromElement = (field: Field): DocuSignTabData | undefined => {
+  if (field?.tab) {
+    const tab = field.tab as DocuSignTabData;
+    switch (field.elemType) {
+      case ElementType.RadioGroup:
+        tab.tabType = 'radioGroup';
+        break;
+      case ElementType.CheckBox:
+        tab.tabType = 'checkbox';
+        break;
+    }
+    return tab;
+  } else if (field.elemType === ElementType.Signature) {
+    // Fallback to the old version which the tab data was stored directly on the field element.
+    return field as any;
+  }
+  return undefined;
+};
+
+export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptions): DocuSignTab | undefined => {
+  const tab = getTabFromElement(s);
+  if (!tab) return undefined;
   let font = undefined as DocuSignFont | undefined;
   let fontSize = undefined as DocuSignFontSize | undefined;
   let fontColor = undefined as DocuSignFontColor | undefined;
   let bold = undefined as boolean | undefined;
   let italic = undefined as boolean | undefined;
   if (
-    s.tabType === 'dateSigned' ||
-    s.tabType === 'fullName' ||
-    s.tabType === 'firstName' ||
-    s.tabType === 'lastName' ||
-    s.tabType === 'emailAddress' ||
-    s.tabType === 'phoneNumber' ||
-    s.tabType === 'company' ||
-    s.tabType === 'text' ||
-    s.tabType === 'title' ||
-    s.tabType === 'number' ||
-    s.tabType === 'numerical' 
+    tab.tabType === 'dateSigned' ||
+    tab.tabType === 'fullName' ||
+    tab.tabType === 'firstName' ||
+    tab.tabType === 'lastName' ||
+    tab.tabType === 'emailAddress' ||
+    tab.tabType === 'phoneNumber' ||
+    tab.tabType === 'company' ||
+    tab.tabType === 'text' ||
+    tab.tabType === 'title' ||
+    tab.tabType === 'number' ||
+    tab.tabType === 'numerical'
   ) {
     font = options?.font ?? fontToDocuSignTabFont(s.font);
     fontSize = options?.fontSize ?? fontSizeToDocuSignTabFontSize(s.fontSize);
@@ -419,32 +442,34 @@ export const createDocuSignTab = (s: Signature, options?: CreateDocuSignTabOptio
   const optional = s.required !== true ? true : undefined;
 
   return {
-    anchorAllowWhiteSpaceInCharacters: toBooleanString(s.anchorAllowWhiteSpaceInCharacters === false),
-    anchorCaseSensitive: toBooleanString(s.anchorCaseSensitive),
-    anchorHorizontalAlignment: s.anchorHorizontalAlignment,
-    anchorIgnoreIfNotPresent: toBooleanString(s.anchorIgnoreIfNotPresent),
-    anchorMatchWholeWord: toBooleanString(s.anchorMatchWholeWord),
-    anchorString: s.anchorString ? s.anchorString : s.id,
-    anchorUnits: s.anchorUnits,
-    anchorXOffset: toIntegerNumberString(s.anchorXOffset),
-    anchorYOffset: toIntegerNumberString(s.anchorYOffset),
-    caption: s.caption,
-    isSealSignTab: s.tabType === 'signHere' || s.tabType === undefined ? toBooleanString(s.isSealSignTab) : undefined,
+    anchorAllowWhiteSpaceInCharacters: toBooleanString(tab.anchorAllowWhiteSpaceInCharacters === false),
+    anchorCaseSensitive: toBooleanString(tab.anchorCaseSensitive),
+    anchorHorizontalAlignment: tab.anchorHorizontalAlignment,
+    anchorIgnoreIfNotPresent: toBooleanString(tab.anchorIgnoreIfNotPresent),
+    anchorMatchWholeWord: toBooleanString(tab.anchorMatchWholeWord),
+    anchorString: tab.anchorString ? tab.anchorString : s.id,
+    anchorUnits: tab.anchorUnits,
+    anchorXOffset: toIntegerNumberString(tab.anchorXOffset),
+    anchorYOffset: toIntegerNumberString(tab.anchorYOffset),
+    caption: tab.caption,
+    isSealSignTab:
+      tab.tabType === 'signHere' || tab.tabType === undefined ? toBooleanString(tab.isSealSignTab) : undefined,
     optional: toBooleanString(optional),
     documentId: options?.documentId,
-    recipientId: s.recipientId,
-    scaleValue: toFloatNumberString(s.scaleValue, 2),
-    stamp: createDocuSignStamp(s.stamp),
-    stampType: s.tabType === 'signHere' || s.tabType === undefined ? s.stampType : undefined,
-    status: s.status,
-    tabGroupLabels: s.tabGroupLabels,
-    tabId: s.tabId,
-    tabLabel: s.tabLabel,
-    tabOrder: toIntegerNumberString(s.tabOrder),
-    tabType: s.tabType,
-    tooltip: s.tooltip,
-    height: options?.useElementSize === true && s.tabType !== 'signHere' ? toIntegerNumberString(s.height) : undefined,
-    width: options?.useElementSize === true && s.tabType !== 'signHere' ? toIntegerNumberString(s.width) : undefined,
+    recipientId: tab.recipientId,
+    scaleValue: toFloatNumberString(tab.scaleValue, 2),
+    stamp: createDocuSignStamp(tab.stamp),
+    stampType: tab.tabType === 'signHere' || tab.tabType === undefined ? tab.stampType : undefined,
+    status: tab.status,
+    tabGroupLabels: tab.tabGroupLabels,
+    tabId: tab.tabId,
+    tabLabel: tab.tabLabel,
+    tabOrder: toIntegerNumberString(tab.tabOrder),
+    tabType: tab.tabType,
+    tooltip: tab.tooltip,
+    height:
+      options?.useElementSize === true && tab.tabType !== 'signHere' ? toIntegerNumberString(s.height) : undefined,
+    width: options?.useElementSize === true && tab.tabType !== 'signHere' ? toIntegerNumberString(s.width) : undefined,
     xPosition: options?.useElementPosition === true ? toIntegerNumberString(s.x) : undefined,
     yPosition: options?.useElementPosition === true ? toIntegerNumberString(s.y) : undefined,
     font,
@@ -589,7 +614,8 @@ export const extractSigners = (pdfDoc: Document, options?: ExtractSignersOptions
   if (signatureFields && signatureFields.length > 0) {
     for (const field of signatureFields) {
       const signatureField = field as Signature;
-      const recipientId = signatureField.recipientId;
+      const tabData = getTabFromElement(signatureField);
+      const recipientId = tabData?.recipientId;
       const fieldName = signatureField.name;
       if (filterByRecipientIds && (!recipientId || !options.recipientIds!.includes(recipientId))) {
         continue;
@@ -598,26 +624,28 @@ export const extractSigners = (pdfDoc: Document, options?: ExtractSignersOptions
         continue;
       }
       const tab = createDocuSignTab(signatureField, options);
-      if (tab.recipientId) {
-        let signer = signers.get(tab.recipientId);
-        if (!signer) {
-          signer = {
-            recipientId: tab.recipientId,
-            tabs: {} as DocuSignSignerTabs,
-          } as DocuSignSigner;
-          signers.set(tab.recipientId, signer);
+      if (tab) {
+        if (tab.recipientId) {
+          let signer = signers.get(tab.recipientId);
+          if (!signer) {
+            signer = {
+              recipientId: tab.recipientId,
+              tabs: {} as DocuSignSignerTabs,
+            } as DocuSignSigner;
+            signers.set(tab.recipientId, signer);
+          }
+          addTabToSigner(signer, tab);
+        } else {
+          let signer = unknownSigners.get(signatureField.name);
+          if (!signer) {
+            signer = {
+              name: signatureField.name,
+              tabs: {} as DocuSignSignerTabs,
+            } as DocuSignSigner;
+            unknownSigners.set(signatureField.name, signer);
+          }
+          addTabToSigner(signer, tab);
         }
-        addTabToSigner(signer, tab);
-      } else {
-        let signer = unknownSigners.get(signatureField.name);
-        if (!signer) {
-          signer = {
-            name: signatureField.name,
-            tabs: {} as DocuSignSignerTabs,
-          } as DocuSignSigner;
-          unknownSigners.set(signatureField.name, signer);
-        }
-        addTabToSigner(signer, tab);
       }
     }
   }

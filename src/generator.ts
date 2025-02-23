@@ -33,6 +33,7 @@ import { Circle, Ellipse, Line, DrawablePath, Square, SVGPath } from './elements
 import { DateInput } from './elements/fields/dateinput';
 
 import moment from 'moment-timezone';
+import { getTabFromElement } from './docusign';
 
 export interface PDFFileGeneratorOption {
   // mapping between custom font name and the font file path or binary of the font file
@@ -285,8 +286,9 @@ export class PDFFileGenerator {
   }
 
   protected async updateSignatureFontAndSize(pdfField: PDFField, field: Signature): Promise<PDFFont> {
-    const fontName = field.anchorStringFont ? field.anchorStringFont : StandardFonts.Helvetica;
-    const fontSize = field.anchorStringFontSize ? field.anchorStringFontSize : 2;
+    const tab = getTabFromElement(field);
+    const fontName = tab?.anchorStringFont ? tab.anchorStringFont : StandardFonts.Helvetica;
+    const fontSize = tab?.anchorStringFontSize ? tab.anchorStringFontSize : 2;
     const pdfFont = await this.getFont(fontName);
     if (pdfFont) {
       if (typeof (pdfField as any).updateAppearances === 'function') {
@@ -360,7 +362,8 @@ export class PDFFileGenerator {
     const { x, y, rotate, height } = element;
     let { width } = element;
     let pdfFont: PDFFont | undefined;
-    const font = element.anchorStringFont ?? StandardFonts.Helvetica;
+    const tab = getTabFromElement(element);
+    const font = tab?.anchorStringFont ?? StandardFonts.Helvetica;
     if (font) {
       pdfFont = await this.getFont(font);
     }
@@ -372,7 +375,7 @@ export class PDFFileGenerator {
           : element.elemType === ElementType.TextField
           ? this.getTextFieldDisplayText(element as TextField)
           : '';
-      const fontSize = element.anchorStringFontSize ?? 2;
+      const fontSize = tab?.anchorStringFontSize ?? 2;
       const woffset = 4;
       const borderWidth = (element as any).borderWidth ?? 1;
       const autoWidth = pdfFont.widthOfTextAtSize(text, fontSize) + 2.0 * (borderWidth + woffset);
@@ -396,6 +399,10 @@ export class PDFFileGenerator {
   }
 
   protected async addButton(page: PDFPage, button: Button): Promise<void> {
+    if (await this.drawDocuSignTab(page, button)) {
+      return
+    }
+
     const form = page.doc.getForm();
     const field = form.createButton(button.name);
     await this.updatePDFField(field, button);
@@ -411,6 +418,10 @@ export class PDFFileGenerator {
   }
 
   protected async addCheckBox(page: PDFPage, checkBox: CheckBox): Promise<void> {
+    if (await this.drawDocuSignTab(page, checkBox)) {
+      return
+    }
+
     const form = page.doc.getForm();
     const field = form.createCheckBox(checkBox.name);
     await this.updatePDFField(field, checkBox);
@@ -424,6 +435,10 @@ export class PDFFileGenerator {
   }
 
   protected async addDropdown(page: PDFPage, dropdown: Dropdown): Promise<void> {
+    if (await this.drawDocuSignTab(page, dropdown)) {
+      return
+    }
+
     const form = page.doc.getForm();
     const field = form.createDropdown(dropdown.name);
     await this.updatePDFField(field, dropdown);
@@ -464,6 +479,10 @@ export class PDFFileGenerator {
   }
 
   protected async addOptionList(page: PDFPage, optionList: OptionList): Promise<void> {
+    if (await this.drawDocuSignTab(page, optionList)) {
+      return
+    }
+
     const form = page.doc.getForm();
     const field = form.createOptionList(optionList.name);
     await this.updatePDFField(field, optionList);
@@ -495,6 +514,10 @@ export class PDFFileGenerator {
   }
 
   protected async addRadioGroup(page: PDFPage, radioGroup: RadioGroup): Promise<void> {
+    if (await this.drawDocuSignTab(page, radioGroup)) {
+      return
+    }
+
     const form = page.doc.getForm();
     const field = form.createRadioGroup(radioGroup.name);
     this.updatePDFField(field, radioGroup);
@@ -511,6 +534,10 @@ export class PDFFileGenerator {
   }
 
   protected async addDateInput(page: PDFPage, dateInput: DateInput): Promise<void> {
+    if (await this.drawDocuSignTab(page, dateInput)) {
+      return
+    }
+
     const form = page.doc.getForm();
     const field = form.createTextField(dateInput.name);
     this.updatePDFField(field, dateInput);
@@ -558,6 +585,10 @@ export class PDFFileGenerator {
   }
 
   protected async addTextField(page: PDFPage, textField: TextField): Promise<void> {
+    if (await this.drawDocuSignTab(page, textField)) {
+      return
+    }
+
     const form = page.doc.getForm();
     const field = form.createTextField(textField.name);
 
@@ -630,7 +661,8 @@ export class PDFFileGenerator {
       field.disableScrolling();
       field.disableSpellChecking();
 
-      const text = signature.anchorString ?? signature.id;
+      const tab = getTabFromElement(signature);
+      const text = tab?.anchorString ?? signature.id;
       if (text) {
         field.setText(text);
       }
@@ -642,53 +674,46 @@ export class PDFFileGenerator {
       const options = await this.createSignatureAppearanceOptions(signature);
       field.addToPage(page, options);
     } else {
-      // To use with DocuSign SignHere tabs,
-      // we will create draw a signature name as text on the widget
-      // usign the same color as the background color of the signature
-      // to hide the text but the DocuSign still can map the SignHere tab
-      // to it (by anchorString is the name of the signature)
-      const {
-        backgroundColor,
-        borderColor,
-        borderWidth,
-        anchorStringFont,
-        anchorStringFontSize,
-        x,
-        y,
-        rotate,
-        width,
-        height,
-      } = signature;
-      const backgroundOptions = {
-        x,
-        y,
-        width,
-        height,
-        rotate: rotate ? degrees(rotate) : undefined,
-        borderColor: borderColor ? colorFromHex(borderColor) : undefined,
-        borderWidth,
-        color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-      };
-      page.drawRectangle(backgroundOptions);
-
-      const fontName = anchorStringFont ? anchorStringFont : StandardFonts.Helvetica;
-      const pdfFont = await this.getFont(fontName);
-      const value = signature.anchorString ?? signature.id;
-      const fz = anchorStringFontSize ?? 2;
-      const lh = pdfFont?.heightAtSize(fz) ?? 0;
-
-      const anchorStringOptions = {
-        font: pdfFont,
-        x: x ? x : undefined,
-        y: y ? y : undefined,
-        maxWidth: width,
-        lineHeight: lh > 0 ? lh : height,
-        size: anchorStringFontSize ?? 2,
-        color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
-        rotate: rotate ? degrees(rotate) : undefined,
-      };
-      page.drawText(value, anchorStringOptions);
+      await this.drawDocuSignTab(page, signature);
     }
+  }
+
+  protected async drawDocuSignTab(page: PDFPage, field: Field): Promise<boolean> {
+    const tab = getTabFromElement(field);
+    if (!tab) {
+      return false;
+    }
+    const { backgroundColor, borderColor, borderWidth, x, y, rotate, width, height } = field;
+    const backgroundOptions = {
+      x,
+      y,
+      width,
+      height,
+      rotate: rotate ? degrees(rotate) : undefined,
+      borderColor: borderColor ? colorFromHex(borderColor) : undefined,
+      borderWidth,
+      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+    };
+    page.drawRectangle(backgroundOptions);
+
+    const fontName = tab?.anchorStringFont ? tab.anchorStringFont : StandardFonts.Helvetica;
+    const pdfFont = await this.getFont(fontName);
+    const value = tab?.anchorString ?? field.id ?? '';
+    const fz = tab?.anchorStringFontSize ?? 2;
+    const lh = pdfFont?.heightAtSize(fz) ?? 0;
+
+    const anchorStringOptions = {
+      font: pdfFont,
+      x: x ? x : undefined,
+      y: y ? y : undefined,
+      maxWidth: width,
+      lineHeight: lh > 0 ? lh : height,
+      size: tab?.anchorStringFontSize ?? 2,
+      color: backgroundColor ? colorFromHex(backgroundColor) : undefined,
+      rotate: rotate ? degrees(rotate) : undefined,
+    };
+    page.drawText(value, anchorStringOptions);
+    return true
   }
 
   protected async drawImage(page: PDFPage, img: Image): Promise<void> {
