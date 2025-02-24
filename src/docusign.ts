@@ -365,17 +365,17 @@ const colorHexToDocuSignTabTextColor = (hex?: string): DocuSignFontColor => {
 };
 
 const toBooleanString = (v?: boolean): 'true' | 'false' | undefined => {
-  if (v === undefined) return undefined;
+  if (v === undefined || v === null) return undefined;
   return v ? 'true' : 'false';
 };
 
 const toIntegerNumberString = (v?: number): string | undefined => {
-  if (v === undefined) return undefined;
+  if (v === undefined || v === null) return undefined;
   return `${Math.round(v)}`;
 };
 
 const toFloatNumberString = (v?: number, dp?: number): string | undefined => {
-  if (v === undefined) return undefined;
+  if (v === undefined || v === null) return undefined;
   return `${v.toFixed(dp ?? 2)}`;
 };
 
